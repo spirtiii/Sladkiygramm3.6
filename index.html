@@ -108,6 +108,7 @@
         
         /* TYPING */
         .typing-bubble { display: none; align-self: flex-start; background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 18px; border-bottom-left-radius: 4px; margin-top: 5px; width: fit-content; animation: msgPop 0.3s ease; align-items: center; gap: 4px; backdrop-filter: blur(5px); }
+        .typing-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); background-size: cover; background-position: center; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; margin-right:6px; }
         .typing-bubble.active { display: flex; }
         .typing-dot { width: 6px; height: 6px; background: var(--text); border-radius: 50%; animation: typeBounce 1.4s infinite ease-in-out both; opacity: 0.7; }
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
@@ -156,6 +157,11 @@
         .msg-voice { display:flex; flex-direction:column; gap:6px; min-width:220px; }
         .voice-controls { display:flex; align-items:center; gap:6px; flex-wrap: wrap; }
         .speed-btn { border:none; border-radius:10px; padding:4px 7px; background: rgba(255,255,255,0.15); color: var(--text); font-size:10px; cursor:pointer; }
+        .speed-btn.active { outline: 2px solid var(--primary); background: rgba(217,70,239,0.25); }
+        #media-viewer-modal .modal-content { max-width: 95vw; width: 95vw; max-height: 90vh; }
+        #media-viewer-content img, #media-viewer-content video { max-width: 100%; max-height: 65vh; border-radius: 12px; }
+        .reaction-picker { display:flex; gap:6px; margin:8px 0; }
+        .reaction-picker .ctx-item { flex:1; justify-content:center; }
         .msg-reactions { display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
         .reaction-pill { padding:2px 6px; border-radius:10px; background: rgba(255,255,255,0.13); font-size: 11px; }
 
@@ -413,6 +419,7 @@
             
             <!-- TYPING BUBBLE -->
             <div id="typing-bubble" class="typing-bubble">
+                <div id="typing-avatar" class="typing-avatar">U</div>
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
@@ -510,6 +517,26 @@
         </div>
     </div>
 
+
+    <div id="media-viewer-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close-modal" onclick="document.getElementById('media-viewer-modal').style.display='none'">&times;</span>
+            <div id="media-viewer-content" style="margin-top:15px;"></div>
+            <a id="media-save-btn" class="btn" download style="display:inline-block; margin-top:12px;">Сохранить</a>
+        </div>
+    </div>
+
+    <div id="group-info-modal" class="modal">
+      <div class="modal-content glass-panel" style="max-width:420px;text-align:left;">
+        <span class="close-modal" onclick="document.getElementById('group-info-modal').style.display='none'">&times;</span>
+        <h3 style="text-align:center;">Управление группой</h3>
+        <input id="group-title-input" placeholder="Название">
+        <textarea id="group-desc-input" rows="2" placeholder="Описание"></textarea>
+        <div style="font-size:12px;opacity:.8;margin:6px 0;" id="group-members-count">0 участников</div>
+        <button class="btn" onclick="saveGroupInfo()">Сохранить</button>
+      </div>
+    </div>
+
     <!-- LEGAL MODAL -->
     <div id="legal-modal" class="modal">
         <div class="modal-content glass-panel" style="max-width: 400px; text-align: left;">
@@ -541,6 +568,12 @@
     </div>
 
     <div id="msg-menu" class="context-menu" onclick="hideAllMenus()">
+        <div class="reaction-picker">
+            <div class="ctx-item" onclick="setReactionFromMenu('❤️')">❤️</div>
+            <div class="ctx-item" onclick="setReactionFromMenu('👍')">👍</div>
+            <div class="ctx-item" onclick="setReactionFromMenu('👎')">👎</div>
+            <div class="ctx-item" onclick="setReactionFromMenu('💔')">💔</div>
+        </div>
         <div class="ctx-item" onclick="triggerReply()"><i class="fas fa-reply"></i> <span data-key="reply">Reply</span></div>
         <div class="ctx-item" onclick="triggerPinMsg()"><i class="fas fa-thumbtack"></i> <span data-key="pin_msg">Pin</span></div>
         <div class="ctx-item ctx-delete" onclick="showDeleteMsgOptions()"><i class="fas fa-trash"></i> <span data-key="delete">Delete</span></div>
@@ -667,12 +700,15 @@
         let typingTimeout = null;
         let callTimerInt = null;
         let callSeconds = 0;
+        let callActive = false;
+        let callLogSent = false;
         let selectedMedia = [];
         let mediaDraftCaption = '';
         let activeVoiceRecord = null;
         let voiceTimerInt = null;
         let voiceRecordStart = 0;
         let justFinishedHoldRecord = false;
+        let currentGroupData = null;
 
         window.onload = () => {
             try {
@@ -793,15 +829,23 @@
             if(activeVoiceRecord && activeVoiceRecord.mode === 'hold') { stopVoiceRecordingAndSend(); justFinishedHoldRecord = true; }
         }
 
+        function pickRecorderMimeType() {
+            const options = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'];
+            if(!window.MediaRecorder) return '';
+            for(const t of options) { if(MediaRecorder.isTypeSupported(t)) return t; }
+            return '';
+        }
+
         async function startVoiceRecording(mode='hold') {
             if(activeVoiceRecord) return;
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({audio:true});
                 const chunks = [];
-                const rec = new MediaRecorder(stream);
+                const mimeType = pickRecorderMimeType();
+                const rec = mimeType ? new MediaRecorder(stream, {mimeType}) : new MediaRecorder(stream);
                 rec.ondataavailable = ev => ev.data.size && chunks.push(ev.data);
                 rec.onstop = () => {
-                    const blob = new Blob(chunks, {type:'audio/webm'});
+                    const blob = new Blob(chunks, {type: rec.mimeType || 'audio/webm'});
                     const reader = new FileReader();
                     reader.onload = ev => sendPayload({ type:'voice', voiceData: ev.target.result, voiceDuration: Date.now()-voiceRecordStart, text:'' });
                     reader.readAsDataURL(blob);
@@ -818,7 +862,7 @@
                     const mm = String(ms%1000).padStart(3,'0');
                     document.getElementById('voice-recording-time').innerText = `${m}:${s}.${mm}`;
                 }, 80);
-            } catch(e) { console.log('voice disabled', e); }
+            } catch(e) { console.log('voice disabled', e); alert('Voice recording is unavailable on this device/browser'); }
         }
 
         function toggleTapVoiceRecord() {
@@ -1009,8 +1053,10 @@
                     knownUsers[c.id] = u;
                     const letter = u.avatar ? '' : (u.nick ? u.nick[0].toUpperCase() : '?');
                     const bg = u.avatar ? `background-image:url(${u.avatar})` : '';
-                    el.querySelector('.avatar').style = bg;
-                    el.querySelector('.avatar').innerText = letter;
+                    const av = el.querySelector('.avatar');
+                    av.style = bg;
+                    av.innerText = letter;
+                    if(u.online) av.classList.add('online'); else av.classList.remove('online');
                     el.querySelector('.chat-name').innerText = u.name || u.nick;
                 }
             });
@@ -1120,12 +1166,19 @@
                     const u = s.val(); if(!u) return;
                     document.getElementById('room-name').innerText = u.name;
                     document.getElementById('room-header-avatar').innerHTML = '<i class="fas fa-users"></i>';
+                    currentGroupData = { id, ...u };
+                    document.getElementById('room-header-avatar').parentElement.onclick = () => openGroupInfo();
                     db.ref(`groups/${id}/typing`).on('value', t => {
                         const typers = t.val();
                         let activeTypers = [];
                         if(typers) { Object.keys(typers).forEach(uid => { if(uid !== myId && typers[uid]) activeTypers.push(knownUsers[uid]?.nick || 'Member'); }); }
                         if(activeTypers.length > 0) {
                             document.getElementById('room-status').innerText = `${activeTypers[0]} ${langData[currentLang].typing}`;
+                            const tAv = document.getElementById('typing-avatar');
+                            const firstTyper = Object.keys(typers||{}).find(uid => uid !== myId && typers[uid]);
+                            const typerUser = knownUsers[firstTyper] || {};
+                            tAv.style.backgroundImage = typerUser.avatar ? `url(${typerUser.avatar})` : '';
+                            tAv.innerText = typerUser.avatar ? '' : (typerUser.nick || 'U')[0].toUpperCase();
                             document.getElementById('typing-bubble').classList.add('active');
                         } else {
                             const memberIds = Object.keys(u.members||{});
@@ -1150,6 +1203,9 @@
                         const isTyping = tSnap.val();
                         if(isTyping) {
                             document.getElementById('room-status').innerText = langData[currentLang].typing;
+                            const tAv = document.getElementById('typing-avatar');
+                            tAv.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
+                            tAv.innerText = u.avatar ? '' : (u.nick||'U')[0].toUpperCase();
                             document.getElementById('typing-bubble').classList.add('active');
                         } else {
                             document.getElementById('typing-bubble').classList.remove('active');
@@ -1199,7 +1255,7 @@
             db.ref(`messages/${cid}`).on('child_changed', s => {
                 const val = s.val();
                 if(val.deletedFor && val.deletedFor[myId]) { const el = document.getElementById(`msg-${s.key}`); if(el) el.remove(); } 
-                else if (val.from === myId && val.status === 'read') { const icon = document.getElementById(`status-${s.key}`); if(icon) icon.className = 'fas fa-check-double msg-status status-read'; }
+                else renderMsg(s.key, val, isGroup, true);
             });
         }
 
@@ -1221,10 +1277,11 @@
             if(msgs.length === 0) ph.classList.add('active'); else ph.classList.remove('active');
         }
 
-        function renderMsg(key, msg, isGroup) {
+        function renderMsg(key, msg, isGroup, forceUpdate=false) {
             document.getElementById('empty-placeholder').classList.remove('active');
             const area = document.getElementById('messages-area');
-            if(document.getElementById(`msg-${key}`)) return;
+            if(document.getElementById(`msg-${key}`) && !forceUpdate) return;
+            if(forceUpdate) { const old = document.getElementById(`msg-${key}`); if(old) old.remove(); }
 
             const div = document.createElement('div');
             div.className = msg.from === myId ? 'msg msg-out' : 'msg msg-in';
@@ -1270,14 +1327,14 @@
                 const media = msg.media || [];
                 content += `<div class="msg-media-grid cols-${Math.min(media.length,3)}">`;
                 media.forEach(m => {
-                    if(m.kind === 'video') content += `<video controls playsinline src="${m.data}"></video>`;
-                    else content += `<img src="${m.data}" alt="media">`;
+                    if(m.kind === 'video') content += `<video controls playsinline src="${m.data}" onclick="event.stopPropagation();openMediaViewer('${m.data}','video')"></video>`;
+                    else content += `<img src="${m.data}" alt="media" onclick="event.stopPropagation();openMediaViewer('${m.data}','image')">`;
                 });
                 content += `</div>`;
                 if(msg.text) content += `<div>${msg.text}</div>`;
             } else if(msg.type === 'voice') {
                 const sec = Math.round((msg.voiceDuration || 0)/1000);
-                content += `<div class="msg-voice"><audio id="audio-${key}" controls src="${msg.voiceData||''}"></audio><div class="voice-controls"><span>Voice • ${sec}s</span>${[0.5,1,1.5,2].map(v=>`<button class='speed-btn' onclick="setVoiceSpeed('audio-${key}', ${v})">${v}x</button>`).join('')}</div></div>`;
+                content += `<div class="msg-voice"><audio id="audio-${key}" controls playsinline preload="metadata" src="${msg.voiceData||''}"></audio><div class="voice-controls"><span>Voice • ${sec}s</span>${[0.5,1,1.5,2].map(v=>`<button class='speed-btn ${v===1?'active':''}' onclick="setVoiceSpeed('audio-${key}', ${v}, this)">${v}x</button>`).join('')}</div></div>`;
             } else content += msg.text;
 
             const d = new Date(msg.time);
@@ -1296,9 +1353,6 @@
             const reactionHtml = Object.keys(reactions).length ? `<div class="msg-reactions">${Object.entries(reactions).map(([emo, users]) => `<span class='reaction-pill' oncontextmenu="event.preventDefault();pickReaction('${key}')">${emo} ${Object.keys(users || {}).length}</span>`).join('')}</div>` : '';
 
             div.innerHTML = `${content}${reactionHtml}<span class="msg-time">${dateStr} ${timeStr} <i class="fas fa-thumbtack msg-pin-icon ${pinClass}"></i> ${checkHtml}</span>`;
-            let lastTap = 0;
-            div.ondblclick = () => toggleMessageReaction(key, '❤️');
-            div.addEventListener('touchend', () => { const now = Date.now(); if(now-lastTap<260) toggleMessageReaction(key, '❤️'); lastTap = now; });
             const bubble = document.getElementById('typing-bubble');
             area.insertBefore(div, bubble);
             area.scrollTop = area.scrollHeight;
@@ -1341,9 +1395,12 @@
             return msgRef;
         }
 
-        function setVoiceSpeed(id, speed) {
+        function setVoiceSpeed(id, speed, btn) {
             const a = document.getElementById(id);
             if(a) a.playbackRate = speed;
+            const box = btn?.parentElement;
+            if(box) box.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
         }
 
         function toggleMessageReaction(mid, emoji='❤️') {
@@ -1357,6 +1414,49 @@
             const options = ['❤️','👍','👎'];
             const picked = prompt('Reaction: ❤️ 👍 👎', '❤️');
             if(options.includes(picked)) toggleMessageReaction(mid, picked);
+        }
+
+
+        function setReactionFromMenu(emoji) {
+            if(!selectedMsgId) return;
+            toggleMessageReaction(selectedMsgId, emoji);
+            hideAllMenus();
+        }
+
+        function openMediaViewer(data, kind='image') {
+            const modal = document.getElementById('media-viewer-modal');
+            const c = document.getElementById('media-viewer-content');
+            const save = document.getElementById('media-save-btn');
+            c.innerHTML = kind === 'video' ? `<video controls autoplay playsinline src="${data}"></video>` : `<img src="${data}" alt="preview">`;
+            save.href = data;
+            save.download = kind === 'video' ? 'video.mp4' : 'photo.jpg';
+            modal.style.display = 'flex';
+        }
+
+        function openGroupInfo() {
+            if(!currentChatId || !currentChatId.startsWith('group_')) return;
+            db.ref(`groups/${currentChatId}`).once('value', s => {
+                const g = s.val();
+                if(!g) return;
+                currentGroupData = { id: currentChatId, ...g };
+                document.getElementById('group-title-input').value = g.name || '';
+                document.getElementById('group-desc-input').value = g.description || '';
+                document.getElementById('group-members-count').innerText = `${Object.keys(g.members||{}).length} участников`;
+                const canEdit = g.admin === myId;
+                document.getElementById('group-title-input').disabled = !canEdit;
+                document.getElementById('group-desc-input').disabled = !canEdit;
+                document.getElementById('group-info-modal').style.display = 'flex';
+            });
+        }
+
+        function saveGroupInfo() {
+            if(!currentGroupData || currentGroupData.admin !== myId) return alert('Только создатель может менять название и описание');
+            const name = document.getElementById('group-title-input').value.trim();
+            const description = document.getElementById('group-desc-input').value.trim();
+            if(!name) return alert('Введите название группы');
+            db.ref(`groups/${currentGroupData.id}`).update({ name, description });
+            sendPayload({ type: 'text', text: '✏️ Создатель изменил данные группы' });
+            document.getElementById('group-info-modal').style.display = 'none';
         }
 
         /* ACTIONS */
@@ -1525,7 +1625,6 @@
 
         function initCall() {
             if(!currentChatId) return;
-            sendPayload({ type: 'call_invite', text: '' });
             // Get media with Video TRUE initially to get the track, then disable it
             navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(stream => {
                 localStream = stream;
@@ -1563,6 +1662,9 @@
                     document.getElementById('remote-video-container').appendChild(v); 
                 });
                 call.on('close', () => endCallUI(true));
+                call.on('error', () => endCallUI(true));
+                callActive = true;
+                callLogSent = false;
             });
         }
 
@@ -1605,23 +1707,28 @@
                     document.getElementById('remote-video-container').appendChild(v); 
                 });
                 activeCall.on('close', () => endCallUI(true));
+                activeCall.on('error', () => endCallUI(true));
+                callActive = true;
+                callLogSent = false;
              });
         }
 
         function declineCall() { 
+            if(activeConn) activeConn.send({ type: 'reject' });
             if(activeCall) { activeCall.close(); activeCall=null; } 
             endCallUI(); 
         }
 
         function endCall() { 
-            if(activeCall) activeCall.close(); 
             if(activeConn) activeConn.send({ type: 'hangup' });
+            if(activeCall) activeCall.close(); 
             endCallUI(); 
         }
 
         function endCallUI(remoteHangup) { 
             const duration = stopTimer();
-            if(document.getElementById('call-modal').style.display === 'flex' && callSeconds > 0) {
+            if(callActive && !callLogSent && callSeconds > 0) {
+                 callLogSent = true;
                  sendPayload({ type: 'call_log', text: duration });
             }
             document.getElementById('call-modal').style.display='none'; 
@@ -1630,6 +1737,7 @@
             document.getElementById('remote-status-muted').classList.remove('active');
             activeCall = null;
             activeConn = null;
+            callActive = false;
         }
 
         function toggleMic() { 
