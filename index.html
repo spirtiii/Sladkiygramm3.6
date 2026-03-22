@@ -740,7 +740,6 @@
         let voiceRecordStart = 0;
         let justFinishedHoldRecord = false;
         let currentGroupData = null;
-        const FAVORITES_CHAT_ID = 'favorites';
         let currentCallSessionId = null;
         let currentCallMeta = null;
         let currentCameraFacing = 'user';
@@ -820,32 +819,6 @@
             toast.classList.add('show');
             clearTimeout(showToast.tid);
             showToast.tid = setTimeout(() => toast.classList.remove('show'), 2200);
-        }
-
-        function isFavoritesChat(id) {
-            return id === FAVORITES_CHAT_ID;
-        }
-
-        function getFavoritesMessagePath() {
-            return `${FAVORITES_CHAT_ID}_${myId}`;
-        }
-
-        function ensureFavoritesChat() {
-            knownUsers[FAVORITES_CHAT_ID] = {
-                nick: 'Избранное',
-                name: 'Избранное',
-                avatar: '',
-                isFavorites: true
-            };
-            db.ref(`users/${myId}/chats/${FAVORITES_CHAT_ID}`).once('value', snap => {
-                if(!snap.exists()) {
-                    db.ref(`users/${myId}/chats/${FAVORITES_CHAT_ID}`).set({
-                        lastMsg: 'Личные заметки',
-                        timestamp: firebase.database.ServerValue.TIMESTAMP,
-                        unread: 0
-                    });
-                }
-            });
         }
 
         function setTheme(t) { 
@@ -1092,7 +1065,6 @@
                 activeConn = conn; 
                 setupConnectionEvents(conn); 
             });
-            ensureFavoritesChat();
             bindIncomingCallListener();
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-screen').classList.add('active');
@@ -1845,10 +1817,7 @@
         }
 
         function initCall() {
-            if(!currentChatId || currentChatId.startsWith('group_') || isFavoritesChat(currentChatId) || currentCallSessionId) {
-                if(isFavoritesChat(currentChatId)) showToast('В Избранное нельзя звонить');
-                return;
-            }
+            if(!currentChatId || currentChatId.startsWith('group_') || currentCallSessionId) return;
             const callId = `call_${Date.now()}_${myId}`;
             currentCallSessionId = callId;
             currentCallMeta = { peerId: currentChatId, direction: 'outgoing', minimized: false };
