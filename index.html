@@ -1355,11 +1355,17 @@
             } else {
                 db.ref(`users/${id}`).on('value', s => {
                     const u = s.val(); if(!u) return;
-                    document.getElementById('room-name').innerText = u.nick;
+                    if(id === myId) {
+                        document.getElementById('room-name').innerText = 'Избранное';
+                        document.getElementById('room-status').innerText = 'Личный чат с собой';
+                    } else {
+                        document.getElementById('room-name').innerText = u.nick;
+                    }
                     const hAv = document.getElementById('room-header-avatar');
-                    hAv.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
-                    hAv.innerText = u.avatar ? '' : (u.name||u.nick)[0].toUpperCase();
+                    hAv.style.backgroundImage = id === myId ? '' : (u.avatar ? `url(${u.avatar})` : '');
+                    hAv.innerText = id === myId ? '★' : (u.avatar ? '' : (u.name||u.nick)[0].toUpperCase());
                     hAv.parentElement.onclick = (e) => {
+                        if(id === myId) return;
                         if(e.target.classList.contains('fa-arrow-left') || e.target.classList.contains('fa-phone') || e.target.classList.contains('fa-video')) return;
                         openUserPreview(id, u);
                     };
@@ -1373,7 +1379,8 @@
                             document.getElementById('typing-bubble').classList.add('active');
                         } else {
                             document.getElementById('typing-bubble').classList.remove('active');
-                            if(u.online) document.getElementById('room-status').innerText = langData[currentLang].online;
+                            if(id === myId) document.getElementById('room-status').innerText = 'Личный чат с собой';
+                            else if(u.online) document.getElementById('room-status').innerText = langData[currentLang].online;
                             else document.getElementById('room-status').innerText = formatLastSeen(u.lastSeen);
                         }
                     });
@@ -1557,10 +1564,12 @@
             const lastTxt = data.type === 'gift' ? '🎁 Gift sent' : (data.type === 'call_log' ? 'Call ended' : data.type === 'media' ? '📎 Media' : data.type === 'voice' ? '🎤 Voice message' : payload.text || 'Message');
             if(!isGroup) {
                 db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
-                db.ref(`users/${currentChatId}/chats/${myId}`).once('value', snap => {
-                    const unread = (snap.val()?.unread || 0) + 1;
-                    db.ref(`users/${currentChatId}/chats/${myId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread });
-                });
+                if(currentChatId !== myId) {
+                    db.ref(`users/${currentChatId}/chats/${myId}`).once('value', snap => {
+                        const unread = (snap.val()?.unread || 0) + 1;
+                        db.ref(`users/${currentChatId}/chats/${myId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread });
+                    });
+                }
             } else {
                 db.ref(`groups/${currentChatId}/members`).once('value', s => {
                     const members = s.val() || {};
