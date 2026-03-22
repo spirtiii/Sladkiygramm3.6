@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sladkiygramm 3.6 🍬</title>
+    <link rel="manifest" href="manifest.webmanifest">
     <!-- ICONS & FONTS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -58,16 +59,18 @@
         .fab-menu { display: none; flex-direction: column; gap: 10px; animation: slideUpFab 0.2s; }
         .fab-menu.active { display: flex; }
         @keyframes slideUpFab { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
-        .fab-item { background: var(--glass); border: var(--glass-border); padding: 12px 18px; border-radius: 15px; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(15px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 14px; }
+        .fab-item { background: var(--glass); border: var(--glass-border); padding: 12px 18px; border-radius: 15px; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(15px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 14px; transition: 0.25s ease; }
+        .fab-item:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.25); }
         .fab { position: relative; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 26px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); cursor: pointer; transition: 0.3s; }
         .fab.rotate { transform: rotate(45deg); background: #ff4444; }
 
         /* CHATS LIST */
         .chat-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .chat-item { display: flex; align-items: center; padding: 14px; border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative; width: 100%; box-sizing: border-box; flex-shrink: 0; min-height: 72px; border-left: 4px solid transparent; }
+        .chat-item { display: flex; align-items: center; padding: 14px; border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative; width: 100%; box-sizing: border-box; flex-shrink: 0; min-height: 72px; border-left: 4px solid transparent; animation: chatSlideIn 0.28s ease; }
         .chat-item:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
         .chat-item.unread-glow { border-left: 4px solid #00e676; background: linear-gradient(90deg, rgba(0,230,118,0.1), transparent); box-shadow: 0 0 15px rgba(0,230,118,0.2); }
         .chat-item.pinned { border: 1px solid var(--primary); background: rgba(255,255,255,0.08); order: -1 !important; }
+        @keyframes chatSlideIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
         .pin-indicator { position: absolute; top: 5px; right: 5px; font-size: 10px; color: var(--primary); display: none; }
         .chat-item.pinned .pin-indicator { display: block; }
         
@@ -107,6 +110,7 @@
         
         /* TYPING */
         .typing-bubble { display: none; align-self: flex-start; background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 18px; border-bottom-left-radius: 4px; margin-top: 5px; width: fit-content; animation: msgPop 0.3s ease; align-items: center; gap: 4px; backdrop-filter: blur(5px); }
+        .typing-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); background-size: cover; background-position: center; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; margin-right:6px; }
         .typing-bubble.active { display: flex; }
         .typing-dot { width: 6px; height: 6px; background: var(--text); border-radius: 50%; animation: typeBounce 1.4s infinite ease-in-out both; opacity: 0.7; }
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
@@ -140,6 +144,34 @@
         .chat-input-bar { padding: 10px 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); margin: 0 10px; border-radius: 20px; background: var(--glass); }
         .send-btn { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; background: var(--primary); border-radius: 50%; color: white; font-size: 18px; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 15px var(--primary); transition: 0.2s; }
         .send-btn:active { transform: scale(0.9); }
+        .attach-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.08); }
+        .unread-badge { min-width: 20px; height: 20px; border-radius: 12px; padding: 0 6px; background: #00e676; color: #08150f; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; }
+        .media-preview-bar { display: none; align-items: center; gap: 8px; padding: 8px 12px; margin: 0 10px 6px; border-radius: 14px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); overflow-x: auto; }
+        .media-preview-cancel { margin-left:auto; width:24px; height:24px; border-radius:50%; border:1px solid rgba(255,255,255,.35); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+        .member-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.08); font-size:13px; }
+        .member-role { font-size:11px; opacity:.8; color: var(--primary);} 
+        .mini-btn { border:none; border-radius:8px; padding:4px 8px; background:rgba(255,255,255,.14); color:var(--text); font-size:11px; cursor:pointer; }
+        .media-preview-chip { position: relative; display: inline-flex; }
+        .media-preview-item { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.25); }
+        .media-preview-remove { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: rgba(255,68,68,0.95); color: white; border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+        .media-preview-meta { font-size: 11px; opacity: 0.8; white-space: nowrap; }
+        .voice-recording { display:none; font-size: 12px; color: #ff7b7b; font-weight: 700; align-items: center; gap: 6px; }
+        .voice-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3b3b; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.2; } }
+        .msg-media-grid { display: grid; gap: 4px; margin-bottom: 6px; }
+        .msg-media-grid.cols-1 { grid-template-columns: 1fr; }
+        .msg-media-grid.cols-2, .msg-media-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+        .msg-media-grid img, .msg-media-grid video { width: 100%; border-radius: 10px; max-height: 180px; object-fit: cover; }
+        .msg-voice { display:flex; flex-direction:column; gap:6px; min-width:220px; }
+        .voice-controls { display:flex; align-items:center; gap:6px; flex-wrap: wrap; }
+        .speed-btn { border:none; border-radius:10px; padding:4px 7px; background: rgba(255,255,255,0.15); color: var(--text); font-size:10px; cursor:pointer; }
+        .speed-btn.active { outline: 2px solid var(--primary); background: rgba(217,70,239,0.25); }
+        #media-viewer-modal .modal-content { max-width: 95vw; width: 95vw; max-height: 90vh; }
+        #media-viewer-content img, #media-viewer-content video { max-width: 100%; max-height: 65vh; border-radius: 12px; }
+        .reaction-picker { display:flex; gap:6px; margin:8px 0; }
+        .reaction-picker .ctx-item { flex:1; justify-content:center; }
+        .msg-reactions { display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
+        .reaction-pill { padding:2px 6px; border-radius:10px; background: rgba(255,255,255,0.13); font-size: 11px; }
 
         /* MODALS */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 500; display: none; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
@@ -226,6 +258,14 @@
         .c-btn.off { background: rgba(255,255,255,0.8); color: #333; }
         #incoming-actions { display: none; width: 100%; justify-content: space-around; padding: 0 40px; margin-bottom: 50px; }
         #active-actions { display: none; }
+        .call-top-actions { position: absolute; top: 20px; right: 20px; z-index: 25; display: flex; gap: 10px; }
+        .call-mini-bar { position: fixed; top: 10px; left: 10px; right: 10px; z-index: 1200; display: none; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 22px; background: rgba(255,255,255,0.16); backdrop-filter: blur(20px) saturate(1.2); border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 10px 35px rgba(0,0,0,0.25); animation: slideDown 0.25s ease; }
+        .call-mini-main { flex: 1; min-width: 0; cursor: pointer; }
+        .call-mini-name { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .call-mini-status { font-size: 12px; opacity: 0.75; }
+        .call-mini-actions { display: flex; gap: 8px; }
+        .call-mini-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; background: rgba(255,255,255,0.08); color: white; }
+        .call-mini-btn.hangup { background: #ff4444; border: none; }
 
         /* TOAST */
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 40, 0.9); backdrop-filter: blur(15px); padding: 12px 25px; border-radius: 30px; display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255,255,255,0.1); z-index: 3000; width: 90%; max-width: 350px; opacity: 0; pointer-events: none; transition: 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
@@ -320,6 +360,7 @@
                 <div class="edit-icon"><i class="fas fa-camera"></i></div>
             </div>
             <input type="file" id="avatar-input" hidden accept="image/*" onchange="uploadAvatar(this)">
+            <button class="btn" style="margin-top:8px; margin-bottom: 10px; padding:8px 14px; font-size:12px;" onclick="removeAvatar()">Удалить аватарку</button>
             <div style="font-size: 26px; font-weight: 800; margin-bottom: 10px; color: var(--text);" id="profile-nick-display">$User</div>
             
             <textarea id="edit-bio" rows="3" placeholder="Bio / Description..." style="font-size: 15px; text-align: center;"></textarea>
@@ -394,6 +435,7 @@
             
             <!-- TYPING BUBBLE -->
             <div id="typing-bubble" class="typing-bubble">
+                <div id="typing-avatar" class="typing-avatar">U</div>
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
@@ -411,9 +453,13 @@
                 </div>
                 <i class="fas fa-times" onclick="cancelReply()" style="padding: 10px; cursor: pointer; opacity: 0.7;"></i>
             </div>
+            <div id="media-preview-bar" class="media-preview-bar"></div>
             <div class="chat-input-bar glass-panel">
+                <input type="file" id="media-input" hidden accept="image/*,video/*" multiple onchange="handleMediaPick(this)">
+                <div class="attach-btn" onclick="document.getElementById('media-input').click()"><i class="fas fa-plus"></i></div>
                 <input type="text" id="msg-input" style="margin: 0; background: rgba(255,255,255,0.08); border: none;" placeholder="Message..." autocomplete="off">
-                <div class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></div>
+                <div id="voice-recording" class="voice-recording"><span class="voice-dot"></span><span id="voice-recording-time">00:00.000</span></div>
+                <div class="send-btn" id="send-btn" onclick="handleSendAction()"><i class="fas fa-paper-plane"></i></div>
             </div>
         </div>
     </div>
@@ -487,6 +533,45 @@
         </div>
     </div>
 
+
+    <div id="media-viewer-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close-modal" onclick="document.getElementById('media-viewer-modal').style.display='none'">&times;</span>
+            <div id="media-viewer-content" style="margin-top:15px;"></div>
+            <a id="media-save-btn" class="btn" download style="display:inline-block; margin-top:12px;">Сохранить</a>
+        </div>
+    </div>
+
+    <div id="group-info-modal" class="modal">
+      <div class="modal-content glass-panel" style="max-width:420px;text-align:left; max-height:85vh; overflow:auto;">
+        <span class="close-modal" onclick="document.getElementById('group-info-modal').style.display='none'">&times;</span>
+        <h3 style="text-align:center;">Управление группой</h3>
+        <div style="display:flex;align-items:center;gap:10px; margin-bottom:8px;">
+            <div class="avatar" id="group-info-avatar" style="width:50px;height:50px;margin:0;"></div>
+            <div style="font-size:12px;opacity:.8;">Фото группы может менять любой участник</div>
+        </div>
+        <input type="file" id="group-avatar-input" hidden accept="image/*" onchange="changeGroupAvatar(this)">
+        <button class="btn" style="margin-bottom:10px;" onclick="document.getElementById('group-avatar-input').click()">Изменить фото группы</button>
+        <input id="group-title-input" placeholder="Название">
+        <textarea id="group-desc-input" rows="2" placeholder="Описание"></textarea>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn" style="flex:1" onclick="saveGroupInfo()">Сохранить</button>
+            <button class="btn" style="flex:1; background:#00a86b;" onclick="openAddMembersModal()">Добавить участников</button>
+        </div>
+        <div style="font-size:12px;opacity:.8;margin:10px 0;" id="group-members-count">0 участников</div>
+        <div id="group-members-list"></div>
+      </div>
+    </div>
+
+    <div id="group-add-members-modal" class="modal">
+      <div class="modal-content glass-panel" style="max-width:420px;text-align:left;">
+        <span class="close-modal" onclick="document.getElementById('group-add-members-modal').style.display='none'">&times;</span>
+        <h3>Добавить участников</h3>
+        <div id="group-add-members-list" style="max-height:260px; overflow:auto;"></div>
+        <button class="btn" onclick="addSelectedMembers()">Добавить выбранных</button>
+      </div>
+    </div>
+
     <!-- LEGAL MODAL -->
     <div id="legal-modal" class="modal">
         <div class="modal-content glass-panel" style="max-width: 400px; text-align: left;">
@@ -518,6 +603,12 @@
     </div>
 
     <div id="msg-menu" class="context-menu" onclick="hideAllMenus()">
+        <div class="reaction-picker">
+            <div class="ctx-item" onclick="setReactionFromMenu('❤️')">❤️</div>
+            <div class="ctx-item" onclick="setReactionFromMenu('👍')">👍</div>
+            <div class="ctx-item" onclick="setReactionFromMenu('👎')">👎</div>
+            <div class="ctx-item" onclick="setReactionFromMenu('💔')">💔</div>
+        </div>
         <div class="ctx-item" onclick="triggerReply()"><i class="fas fa-reply"></i> <span data-key="reply">Reply</span></div>
         <div class="ctx-item" onclick="triggerPinMsg()"><i class="fas fa-thumbtack"></i> <span data-key="pin_msg">Pin</span></div>
         <div class="ctx-item ctx-delete" onclick="showDeleteMsgOptions()"><i class="fas fa-trash"></i> <span data-key="delete">Delete</span></div>
@@ -539,6 +630,9 @@
             <span class="close-modal" onclick="document.getElementById('group-create-modal').style.display='none'">&times;</span>
             <h3 data-key="create_group">Create Group</h3>
             <input type="text" id="group-name-input" placeholder="Group Name">
+            <input type="file" id="group-create-avatar-input" hidden accept="image/*" onchange="handleGroupCreateAvatar(this)">
+            <button class="btn" style="margin-top:10px;" onclick="document.getElementById('group-create-avatar-input').click()">Добавить аватарку группы</button>
+            <div id="group-create-avatar-preview" class="avatar" style="width:46px;height:46px;margin:10px auto 0;"></div>
             <p style="text-align:left; font-size:13px; margin-top:15px; opacity:0.7;" data-key="select_members">Select Members:</p>
             <div id="group-user-list" style="max-height:150px; overflow-y:auto; text-align:left; border:1px solid rgba(255,255,255,0.1); padding:5px; border-radius:10px; margin:10px 0;"></div>
             <button class="btn" onclick="createGroup()" data-key="create">Create</button>
@@ -549,6 +643,9 @@
     <div id="call-modal">
         <div id="call-background"></div>
         <div class="call-quality"><div class="quality-dot"></div> Good</div>
+        <div class="call-top-actions">
+            <button class="c-btn" style="width:46px;height:46px;font-size:18px;" onclick="toggleCallMinimize()"><i class="fas fa-window-minimize"></i></button>
+        </div>
         
         <div id="remote-video-container"></div>
         
@@ -579,8 +676,24 @@
             <div id="active-actions" class="call-controls-bar">
                 <button class="c-btn" id="btn-mic" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
                 <button class="c-btn off" id="btn-cam" onclick="toggleCam()"><i class="fas fa-video"></i></button>
+                <button class="c-btn" onclick="switchCameraFacing()"><i class="fas fa-rotate"></i></button>
                 <button class="c-btn hangup" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
             </div>
+        </div>
+    </div>
+
+    <div id="call-mini-bar" class="call-mini-bar">
+        <div class="call-mini-main" onclick="openCallModal()">
+            <div class="call-mini-name" id="call-mini-name">User</div>
+            <div class="call-mini-status" id="call-mini-status">Calling...</div>
+        </div>
+        <div id="call-mini-incoming" class="call-mini-actions" style="display:none;">
+            <div class="call-mini-btn hangup" onclick="declineCall()"><i class="fas fa-phone-slash"></i></div>
+            <div class="call-mini-btn" style="background:#00e676; border:none;" onclick="answerCall(); openCallModal();"><i class="fas fa-phone"></i></div>
+        </div>
+        <div id="call-mini-active" class="call-mini-actions" style="display:none;">
+            <div class="call-mini-btn" onclick="toggleMic()"><i class="fas fa-microphone"></i></div>
+            <div class="call-mini-btn hangup" onclick="endCall()"><i class="fas fa-phone-slash"></i></div>
         </div>
     </div>
 
@@ -644,6 +757,20 @@
         let typingTimeout = null;
         let callTimerInt = null;
         let callSeconds = 0;
+        let callActive = false;
+        let callLogSent = false;
+        let callMinimized = false;
+        let callDirection = null;
+        let currentFacingMode = 'user';
+        let selectedMedia = [];
+        let mediaDraftCaption = '';
+        let activeVoiceRecord = null;
+        let voiceTimerInt = null;
+        let voiceRecordStart = 0;
+        let justFinishedHoldRecord = false;
+        let currentGroupData = null;
+        let groupCreateAvatarData = '';
+        let outgoingCallConn = null;
 
         window.onload = () => {
             try {
@@ -659,7 +786,10 @@
                     el.oninput = () => { if(el.value && idx < 3) arr[idx+1].focus(); };
                 });
 
-                document.getElementById('msg-input').addEventListener('input', handleTyping);
+                document.getElementById('msg-input').addEventListener('input', () => { handleTyping(); updateSendButtonState(); mediaDraftCaption = document.getElementById('msg-input').value; });
+                setupVoiceHandlers();
+                registerServiceWorker();
+                requestNotifPermission();
                 
                 const savedSession = localStorage.getItem('sladkiy_session_user');
                 if (savedSession) { myId = savedSession; myNick = localStorage.getItem('sladkiy_session_nick'); startApp(); }
@@ -716,6 +846,235 @@
                 document.getElementById(theme).classList.remove('selected-border');
             });
             document.getElementById(t).classList.add('selected-border');
+        }
+
+        function registerServiceWorker() {
+            if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+        }
+
+        function requestNotifPermission() {
+            if('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {});
+        }
+
+        function updateSendButtonState() {
+            const txt = document.getElementById('msg-input').value.trim();
+            const btn = document.getElementById('send-btn');
+            if(!btn) return;
+            btn.innerHTML = txt || selectedMedia.length ? '<i class="fas fa-paper-plane"></i>' : '<i class="fas fa-microphone"></i>';
+        }
+
+        function handleSendAction() {
+            if(justFinishedHoldRecord) { justFinishedHoldRecord = false; return; }
+            const txt = document.getElementById('msg-input').value.trim();
+            if(txt || selectedMedia.length) sendMessage();
+            else toggleTapVoiceRecord();
+        }
+
+        function setupVoiceHandlers() {
+            const btn = document.getElementById('send-btn');
+            if(!btn) return;
+            btn.addEventListener('mousedown', startHoldVoiceRecord);
+            btn.addEventListener('mouseup', stopHoldVoiceRecord);
+            btn.addEventListener('mouseleave', stopHoldVoiceRecord);
+            btn.addEventListener('touchstart', startHoldVoiceRecord, {passive:true});
+            btn.addEventListener('touchend', stopHoldVoiceRecord);
+            updateSendButtonState();
+        }
+
+        function startHoldVoiceRecord(e) {
+            if(document.getElementById('msg-input').value.trim() || selectedMedia.length) return;
+            if(e) e.preventDefault();
+            startVoiceRecording();
+        }
+
+        function stopHoldVoiceRecord() {
+            if(activeVoiceRecord && activeVoiceRecord.mode === 'hold') { stopVoiceRecordingAndSend(); justFinishedHoldRecord = true; }
+        }
+
+        function pickRecorderMimeType() {
+            const options = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'];
+            if(!window.MediaRecorder) return '';
+            for(const t of options) { if(MediaRecorder.isTypeSupported(t)) return t; }
+            return '';
+        }
+
+        async function startVoiceRecording(mode='hold') {
+            if(activeVoiceRecord) return;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+                const chunks = [];
+                const mimeType = pickRecorderMimeType();
+                const rec = mimeType ? new MediaRecorder(stream, {mimeType}) : new MediaRecorder(stream);
+                rec.ondataavailable = ev => ev.data.size && chunks.push(ev.data);
+                rec.onstop = () => {
+                    const blob = new Blob(chunks, {type: rec.mimeType || 'audio/webm'});
+                    const reader = new FileReader();
+                    reader.onload = ev => sendPayload({ type:'voice', voiceData: ev.target.result, voiceDuration: Date.now()-voiceRecordStart, text:'' });
+                    reader.readAsDataURL(blob);
+                    stream.getTracks().forEach(t => t.stop());
+                };
+                voiceRecordStart = Date.now();
+                activeVoiceRecord = {rec, mode};
+                rec.start();
+                document.getElementById('voice-recording').style.display = 'flex';
+                voiceTimerInt = setInterval(() => {
+                    const ms = Date.now() - voiceRecordStart;
+                    const m = String(Math.floor(ms/60000)).padStart(2,'0');
+                    const s = String(Math.floor((ms%60000)/1000)).padStart(2,'0');
+                    const mm = String(ms%1000).padStart(3,'0');
+                    document.getElementById('voice-recording-time').innerText = `${m}:${s}.${mm}`;
+                }, 80);
+            } catch(e) { console.log('voice disabled', e); alert('Voice recording is unavailable on this device/browser'); }
+        }
+
+        function toggleTapVoiceRecord() {
+            if(activeVoiceRecord && activeVoiceRecord.mode === 'tap') stopVoiceRecordingAndSend();
+            else startVoiceRecording('tap');
+        }
+
+        function stopVoiceRecordingAndSend() {
+            if(!activeVoiceRecord) return;
+            clearInterval(voiceTimerInt);
+            voiceTimerInt = null;
+            document.getElementById('voice-recording').style.display = 'none';
+            const recorder = activeVoiceRecord.rec;
+            activeVoiceRecord = null;
+            recorder.stop();
+            updateSendButtonState();
+        }
+
+        function handleMediaPick(inp) {
+            const files = Array.from(inp.files || []).slice(0, 3);
+            selectedMedia = [];
+            Promise.all(files.map((f, idx) => compressMedia(f, idx))).then(items => {
+                selectedMedia = items.filter(Boolean);
+                renderMediaPreview();
+                updateSendButtonState();
+            });
+        }
+
+        function compressMedia(file, idx) {
+            return new Promise(resolve => {
+                if(file.type.startsWith('video/')) {
+                    const r = new FileReader();
+                    r.onload = e => resolve({ kind:'video', data: e.target.result, name:file.name || `video_${idx+1}.mp4` });
+                    r.readAsDataURL(file);
+                    return;
+                }
+                const img = new Image();
+                const fr = new FileReader();
+                fr.onload = e => { img.onload = () => {
+                        const maxW = 1280;
+                        const scale = Math.min(1, maxW / img.width);
+                        const cv = document.createElement('canvas');
+                        cv.width = Math.round(img.width * scale);
+                        cv.height = Math.round(img.height * scale);
+                        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+                        resolve({ kind:'image', data: cv.toDataURL('image/jpeg', 0.78), name:file.name || `photo_${idx+1}.jpg` });
+                    };
+                    img.src = e.target.result;
+                };
+                fr.readAsDataURL(file);
+            });
+        }
+
+        function renderMediaPreview() {
+            const wrap = document.getElementById('media-preview-bar');
+            if(!selectedMedia.length) { wrap.style.display='none'; wrap.innerHTML=''; return; }
+            wrap.style.display = 'flex';
+            wrap.innerHTML = `<div class="media-preview-meta">${selectedMedia.length} file(s) added</div><div class="media-preview-cancel" onclick="clearMediaDraft()">✕</div>`;
+            selectedMedia.forEach((m, idx) => {
+                const chip = document.createElement('div');
+                chip.className = 'media-preview-chip';
+                const node = m.kind === 'image' ? document.createElement('img') : document.createElement('video');
+                node.className = 'media-preview-item';
+                node.src = m.data;
+                if(m.kind === 'video') { node.muted = true; node.playsInline = true; }
+                const remove = document.createElement('div');
+                remove.className = 'media-preview-remove';
+                remove.innerText = '✕';
+                remove.onclick = () => removeMediaAt(idx);
+                chip.appendChild(node);
+                chip.appendChild(remove);
+                wrap.appendChild(chip);
+            });
+        }
+
+
+        function clearMediaDraft() {
+            selectedMedia = [];
+            const input = document.getElementById('media-input');
+            if(input) input.value = '';
+            renderMediaPreview();
+            updateSendButtonState();
+        }
+
+        function removeMediaAt(index) {
+            selectedMedia.splice(index, 1);
+            renderMediaPreview();
+            updateSendButtonState();
+        }
+
+        function handleGroupCreateAvatar(inp) {
+            const f = inp.files?.[0];
+            if(!f) return;
+            const r = new FileReader();
+            r.onload = e => {
+                groupCreateAvatarData = e.target.result;
+                const p = document.getElementById('group-create-avatar-preview');
+                p.style.backgroundImage = `url(${groupCreateAvatarData})`;
+                p.innerText = '';
+            };
+            r.readAsDataURL(f);
+        }
+
+        function showLocalNotification(title, body) {
+            if(!('Notification' in window) || Notification.permission !== 'granted') return;
+            if(document.hidden || !document.getElementById('chat-room').classList.contains('active')) new Notification(title, { body });
+        }
+
+        function updateCallMiniBar(name, status, incoming = false) {
+            document.getElementById('call-mini-name').innerText = name || 'User';
+            document.getElementById('call-mini-status').innerText = status || '';
+            document.getElementById('call-mini-bar').style.display = 'flex';
+            document.getElementById('call-mini-incoming').style.display = incoming ? 'flex' : 'none';
+            document.getElementById('call-mini-active').style.display = incoming ? 'none' : 'flex';
+        }
+
+        function openCallModal() {
+            if(!callActive && !activeCall) return;
+            callMinimized = false;
+            document.getElementById('call-modal').style.display = 'flex';
+            document.getElementById('call-mini-bar').style.display = 'none';
+        }
+
+        function toggleCallMinimize(force) {
+            const nextState = typeof force === 'boolean' ? force : !callMinimized;
+            callMinimized = nextState;
+            if(callMinimized) {
+                document.getElementById('call-modal').style.display = 'none';
+                const incoming = document.getElementById('incoming-actions').style.display === 'flex';
+                updateCallMiniBar(document.getElementById('call-name').innerText, document.getElementById('call-status').innerText, incoming);
+            } else {
+                openCallModal();
+            }
+        }
+
+        function updateCallStatusText(text, mirrorMini = true) {
+            document.getElementById('call-status').innerText = text;
+            if(mirrorMini) document.getElementById('call-mini-status').innerText = text;
+        }
+
+        function sortChatList() {
+            const container = document.getElementById('chats-container');
+            const items = Array.from(container.children);
+            items.sort((a, b) => {
+                const aPinned = a.classList.contains('pinned') ? 1 : 0;
+                const bPinned = b.classList.contains('pinned') ? 1 : 0;
+                if(aPinned !== bPinned) return bPinned - aPinned;
+                return Number(b.dataset.timestamp || 0) - Number(a.dataset.timestamp || 0);
+            });
+            items.forEach(el => container.appendChild(el));
         }
 
         function checkAuthFlow() {
@@ -781,20 +1140,33 @@
             });
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-screen').classList.add('active');
+            ensureFavoritesChat();
             loadChats();
         }
         
+        function ensureFavoritesChat() {
+            db.ref(`users/${myId}/chats/${myId}`).once('value', s => {
+                if(!s.exists()) db.ref(`users/${myId}/chats/${myId}`).set({ lastMsg: 'Избранное', timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
+            });
+        }
+
         function setupConnectionEvents(conn) {
             conn.on('data', data => {
                 if(data.type === 'reject' || data.type === 'hangup') {
-                    endCallUI();
+                    updateCallStatusText(data.type === 'reject' ? 'Call declined' : 'Call ended');
+                    endCallUI(true);
                 }
                 if(data.type === 'mic-toggle') {
                     const el = document.getElementById('remote-status-muted');
                     if(el) {
                         el.classList.toggle('active', !data.value);
                     }
+                    updateCallStatusText(data.value ? 'Микрофон собеседника включён' : 'Собеседник выключил микрофон');
+                    setTimeout(() => {
+                        if(callActive) updateCallStatusText(callSeconds > 0 ? 'Connected' : (callDirection === 'incoming' ? 'Incoming Call...' : 'Calling...'));
+                    }, 1800);
                 }
+                if(data.type === 'call-open') openCallModal();
             });
             conn.on('close', () => endCallUI());
         }
@@ -809,7 +1181,12 @@
                 const el = document.getElementById(`chat-${c.id}`);
                 if(el) {
                     el.querySelector('.last-msg').innerText = c.lastMsg || '...';
+                    el.dataset.timestamp = c.timestamp || 0;
+                    const ub = el.querySelector('.unread-badge');
+                    if((c.unread||0) > 0) { ub.style.display='inline-flex'; ub.innerText = c.unread > 99 ? '99+' : c.unread; el.classList.add('unread-glow'); }
+                    else { ub.style.display='none'; el.classList.remove('unread-glow'); }
                     if(c.pinned) el.classList.add('pinned'); else el.classList.remove('pinned');
+                    sortChatList();
                 }
             });
         }
@@ -819,22 +1196,28 @@
             const el = document.createElement('div');
             el.className = `chat-item glass-panel ${c.pinned ? 'pinned' : ''}`;
             el.id = `chat-${c.id}`;
+            el.dataset.timestamp = c.timestamp || 0;
             el.onclick = () => openChat(c.id);
             el.oncontextmenu = (e) => { e.preventDefault(); showChatContext(e, c.id); }
             let timer;
             el.ontouchstart = (e) => { timer = setTimeout(() => { showChatContext(e.touches[0], c.id); }, 600); }
             el.ontouchend = () => clearTimeout(timer);
-            el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div>`;
+            el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div><div class="unread-badge" style="display:${(c.unread||0)>0?'inline-flex':'none'}">${c.unread||''}</div>`;
+            if((c.unread||0)>0) el.classList.add('unread-glow');
             container.appendChild(el); 
+            sortChatList();
             db.ref(c.id.startsWith('group_') ? `groups/${c.id}` : `users/${c.id}`).on('value', s => {
                 const u = s.val();
                 if(u) {
                     knownUsers[c.id] = u;
-                    const letter = u.avatar ? '' : (u.nick ? u.nick[0].toUpperCase() : '?');
+                    const title = c.id === myId ? 'Избранное' : (u.name || u.nick);
+                    const letter = u.avatar ? '' : ((title || '?')[0].toUpperCase());
                     const bg = u.avatar ? `background-image:url(${u.avatar})` : '';
-                    el.querySelector('.avatar').style = bg;
-                    el.querySelector('.avatar').innerText = letter;
-                    el.querySelector('.chat-name').innerText = u.name || u.nick;
+                    const av = el.querySelector('.avatar');
+                    av.style = bg;
+                    av.innerText = letter;
+                    if(u.online) av.classList.add('online'); else av.classList.remove('online');
+                    el.querySelector('.chat-name').innerText = title;
                 }
             });
         }
@@ -879,22 +1262,23 @@
             history.pushState({view: 'modal'}, '', '');
             
             document.getElementById('fab-menu').classList.remove('active');
+            document.getElementById('fab-main').classList.remove('rotate');
             document.getElementById('group-create-modal').style.display = 'flex';
             const list = document.getElementById('group-user-list');
             list.innerHTML = '';
             
-            db.ref('users').limitToLast(50).once('value', s => {
-                s.forEach(snap => {
-                    if(snap.key !== myId) {
+            db.ref(`users/${myId}/chats`).once('value', chatSnap => {
+                const ids = Object.keys(chatSnap.val() || {}).filter(uid => !uid.startsWith('group_'));
+                ids.forEach(uid => {
+                    db.ref(`users/${uid}`).once('value', snap => {
+                        if(!snap.exists()) return;
                         const u = snap.val();
                         const div = document.createElement('div');
                         div.className = 'user-check-item';
                         div.onclick = () => { const cb = div.querySelector('input'); cb.checked = !cb.checked; };
-                        div.innerHTML = `<input type="checkbox" value="${snap.key}" onclick="event.stopPropagation()">
-                                         <div class="check-avatar">${u.avatar?'':u.nick[0]}</div>
-                                         <span>${u.nick}</span>`;
+                        div.innerHTML = `<input type="checkbox" value="${uid}" onclick="event.stopPropagation()"><div class="check-avatar">${u.avatar?'':u.nick[0]}</div><span>${u.nick}</span>`;
                         list.appendChild(div);
-                    }
+                    });
                 });
             });
         }
@@ -909,7 +1293,7 @@
             const members = { [myId]: true };
             checks.forEach(c => members[c.value] = true);
             
-            db.ref(`groups/${gid}`).set({ name: name, members: members, admin: myId });
+            db.ref(`groups/${gid}`).set({ name: name, members: members, admin: myId, description: '', onlineCount: 1, avatar: groupCreateAvatarData || '' });
             
             for(let uid in members) {
                 db.ref(`users/${uid}/chats/${gid}`).update({ 
@@ -918,6 +1302,7 @@
                 });
             }
             document.getElementById('group-create-modal').style.display = 'none';
+            groupCreateAvatarData=''; document.getElementById('group-create-avatar-preview').style.backgroundImage=''; document.getElementById('group-create-avatar-preview').innerText='';
             openChat(gid);
         }
 
@@ -928,6 +1313,7 @@
 
             currentChatId = id;
             document.getElementById('chat-room').classList.add('active');
+            db.ref(`users/${myId}/chats/${id}/unread`).set(0);
             const area = document.getElementById('messages-area');
             const bubble = document.getElementById('typing-bubble');
             area.innerHTML = '<div id="empty-placeholder" class="empty-chat-placeholder"><div class="ec-icon">🍬</div><div class="ec-title" data-key="new_chat_title">New Chat</div><div class="ec-text" data-key="new_chat_desc">Write something to start history. Be careful with scammers!</div></div>'; 
@@ -941,16 +1327,27 @@
                  db.ref(`groups/${id}`).on('value', s => {
                     const u = s.val(); if(!u) return;
                     document.getElementById('room-name').innerText = u.name;
-                    document.getElementById('room-header-avatar').innerHTML = '<i class="fas fa-users"></i>';
+                    const gAv = document.getElementById('room-header-avatar');
+                    gAv.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
+                    gAv.innerHTML = u.avatar ? '' : (u.name||'G')[0].toUpperCase();
+                    currentGroupData = { id, ...u };
+                    document.getElementById('room-header-avatar').parentElement.onclick = () => openGroupInfo();
                     db.ref(`groups/${id}/typing`).on('value', t => {
                         const typers = t.val();
                         let activeTypers = [];
                         if(typers) { Object.keys(typers).forEach(uid => { if(uid !== myId && typers[uid]) activeTypers.push(knownUsers[uid]?.nick || 'Member'); }); }
                         if(activeTypers.length > 0) {
                             document.getElementById('room-status').innerText = `${activeTypers[0]} ${langData[currentLang].typing}`;
+                            const tAv = document.getElementById('typing-avatar');
+                            const firstTyper = Object.keys(typers||{}).find(uid => uid !== myId && typers[uid]);
+                            const typerUser = knownUsers[firstTyper] || {};
+                            tAv.style.backgroundImage = typerUser.avatar ? `url(${typerUser.avatar})` : '';
+                            tAv.innerText = typerUser.avatar ? '' : (typerUser.nick || 'U')[0].toUpperCase();
                             document.getElementById('typing-bubble').classList.add('active');
                         } else {
-                            document.getElementById('room-status').innerText = `${Object.keys(u.members).length} members`;
+                            const memberIds = Object.keys(u.members||{});
+                            let onlineCount = 0;
+                            memberIds.forEach(uid => { db.ref(`users/${uid}/online`).once('value', os => { if(os.val()) onlineCount++; document.getElementById('room-status').innerText = onlineCount > 1 ? `${onlineCount} в сети` : 'Только вы в сети'; }); });
                             document.getElementById('typing-bubble').classList.remove('active');
                         }
                     });
@@ -970,6 +1367,9 @@
                         const isTyping = tSnap.val();
                         if(isTyping) {
                             document.getElementById('room-status').innerText = langData[currentLang].typing;
+                            const tAv = document.getElementById('typing-avatar');
+                            tAv.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
+                            tAv.innerText = u.avatar ? '' : (u.nick||'U')[0].toUpperCase();
                             document.getElementById('typing-bubble').classList.add('active');
                         } else {
                             document.getElementById('typing-bubble').classList.remove('active');
@@ -1009,18 +1409,22 @@
                 const msg = s.val();
                 if(msg.deletedFor && msg.deletedFor[myId]) return; 
                 renderMsg(s.key, msg, isGroup);
-                if(msg.from !== myId && msg.status !== 'read') { db.ref(`messages/${cid}/${s.key}`).update({ status: 'read' }); }
+                if(msg.from !== myId && msg.status !== 'read') { 
+                    db.ref(`messages/${cid}/${s.key}`).update({ status: 'read' });
+                    if(msg.type === 'call_invite') showLocalNotification(msg.fromNick || 'Incoming call', 'is calling you');
+                    else if(msg.type === 'text' || msg.type === 'media') showLocalNotification(msg.fromNick || 'New message', msg.text || 'Media message');
+                }
             });
             db.ref(`messages/${cid}`).on('child_removed', s => { const el = document.getElementById(`msg-${s.key}`); if(el) el.remove(); checkEmptyChat(); });
             db.ref(`messages/${cid}`).on('child_changed', s => {
                 const val = s.val();
                 if(val.deletedFor && val.deletedFor[myId]) { const el = document.getElementById(`msg-${s.key}`); if(el) el.remove(); } 
-                else if (val.from === myId && val.status === 'read') { const icon = document.getElementById(`status-${s.key}`); if(icon) icon.className = 'fas fa-check-double msg-status status-read'; }
+                else renderMsg(s.key, val, isGroup, true);
             });
         }
 
         function handleTyping() {
-            if(!currentChatId) return;
+            if(!currentChatId || currentChatId===myId) return;
             const isGroup = currentChatId.startsWith('group_');
             if(isGroup) db.ref(`groups/${currentChatId}/typing/${myId}`).set(true);
             else db.ref(`users/${myId}/chats/${currentChatId}/typing`).set(true);
@@ -1037,15 +1441,24 @@
             if(msgs.length === 0) ph.classList.add('active'); else ph.classList.remove('active');
         }
 
-        function renderMsg(key, msg, isGroup) {
+        function renderMsg(key, msg, isGroup, forceUpdate=false) {
             document.getElementById('empty-placeholder').classList.remove('active');
             const area = document.getElementById('messages-area');
-            if(document.getElementById(`msg-${key}`)) return;
+            if(document.getElementById(`msg-${key}`) && !forceUpdate) return;
+            let nextNode = document.getElementById('typing-bubble');
+            if(forceUpdate) { 
+                const old = document.getElementById(`msg-${key}`); 
+                if(old) {
+                    nextNode = old.nextElementSibling || document.getElementById('typing-bubble');
+                    old.remove();
+                }
+            }
 
             const div = document.createElement('div');
             div.className = msg.from === myId ? 'msg msg-out' : 'msg msg-in';
             div.id = `msg-${key}`;
             
+            if (msg.type === 'call_invite') { return; }
             if (msg.type === 'call_log') {
                 div.className = 'msg msg-in'; 
                 div.style.background = 'transparent'; 
@@ -1081,6 +1494,18 @@
                 const gKey = 'gift_' + msg.giftType;
                 const label = langData[currentLang][gKey] || msg.giftLabel;
                 content += `<div class="msg-gift"><div class="gift-msg-title">${label}</div><div class="gift-msg-icon">${msg.giftIcon}</div></div>`;
+            } else if(msg.type === 'media') {
+                const media = msg.media || [];
+                content += `<div class="msg-media-grid cols-${Math.min(media.length,3)}">`;
+                media.forEach(m => {
+                    if(m.kind === 'video') content += `<video controls playsinline src="${m.data}" onclick="event.stopPropagation();openMediaViewer('${m.data}','video')"></video>`;
+                    else content += `<img src="${m.data}" alt="media" onclick="event.stopPropagation();openMediaViewer('${m.data}','image')">`;
+                });
+                content += `</div>`;
+                if(msg.text) content += `<div>${msg.text}</div>`;
+            } else if(msg.type === 'voice') {
+                const sec = Math.round((msg.voiceDuration || 0)/1000);
+                content += `<div class="msg-voice"><audio id="audio-${key}" controls playsinline preload="metadata" src="${msg.voiceData||''}"></audio><div class="voice-controls"><span>Voice • ${sec}s</span>${[0.5,1,1.5,2].map(v=>`<button class='speed-btn ${v===1?'active':''}' onclick="setVoiceSpeed('audio-${key}', ${v}, this)">${v}x</button>`).join('')}</div></div>`;
             } else content += msg.text;
 
             const d = new Date(msg.time);
@@ -1095,18 +1520,27 @@
             }
             const isPinned = Object.values(currentChatPins).find(p => p.id === key);
             const pinClass = isPinned ? 'active' : '';
+            const reactions = msg.reactions || {};
+            const reactionHtml = Object.keys(reactions).length ? `<div class="msg-reactions">${Object.entries(reactions).map(([emo, users]) => `<span class='reaction-pill' oncontextmenu="event.preventDefault();pickReaction('${key}')">${emo} ${Object.keys(users || {}).length}</span>`).join('')}</div>` : '';
 
-            div.innerHTML = `${content}<span class="msg-time">${dateStr} ${timeStr} <i class="fas fa-thumbtack msg-pin-icon ${pinClass}"></i> ${checkHtml}</span>`;
-            const bubble = document.getElementById('typing-bubble');
-            area.insertBefore(div, bubble);
-            area.scrollTop = area.scrollHeight;
+            div.innerHTML = `${content}${reactionHtml}<span class="msg-time">${dateStr} ${timeStr} <i class="fas fa-thumbtack msg-pin-icon ${pinClass}"></i> ${checkHtml}</span>`;
+            area.insertBefore(div, nextNode || document.getElementById('typing-bubble'));
+            if(!forceUpdate) area.scrollTop = area.scrollHeight;
         }
 
         function sendMessage() {
             const txt = document.getElementById('msg-input').value.trim();
-            if(!txt || !currentChatId) return;
-            sendPayload({ text: txt, type: 'text' });
+            if(!currentChatId) return;
+            if(selectedMedia.length) {
+                sendPayload({ text: txt, type: 'media', media: selectedMedia.slice(0,3) });
+                selectedMedia = [];
+                renderMediaPreview();
+            } else if(txt) {
+                sendPayload({ text: txt, type: 'text' });
+            } else return;
             document.getElementById('msg-input').value = '';
+            mediaDraftCaption = '';
+            updateSendButtonState();
             if(currentChatId.startsWith('group_')) db.ref(`groups/${currentChatId}/typing/${myId}`).remove();
             else db.ref(`users/${myId}/chats/${currentChatId}/typing`).set(false);
         }
@@ -1116,13 +1550,169 @@
             const cid = isGroup ? currentChatId : [myId, currentChatId].sort().join('_');
             const payload = { from: myId, fromNick: myNick, text: data.text || '', type: data.type || 'text', time: firebase.database.ServerValue.TIMESTAMP, status: 'sent' };
             if(data.type === 'gift') { payload.giftIcon = data.giftIcon; payload.giftLabel = data.giftLabel; payload.giftType = data.giftType; }
+            if(data.type === 'media') payload.media = data.media || [];
+            if(data.type === 'voice') { payload.voiceData = data.voiceData; payload.voiceDuration = data.voiceDuration || 0; }
             if(replyingTo) { payload.replyTo = replyingTo; cancelReply(); }
-            db.ref(`messages/${cid}`).push(payload);
-            const lastTxt = data.type === 'gift' ? '🎁 Gift sent' : (data.type === 'call_log' ? 'Call ended' : payload.text);
+            const msgRef = db.ref(`messages/${cid}`).push(payload);
+            const lastTxt = data.type === 'gift' ? '🎁 Gift sent' : (data.type === 'call_log' ? 'Call ended' : data.type === 'media' ? '📎 Media' : data.type === 'voice' ? '🎤 Voice message' : payload.text || 'Message');
             if(!isGroup) {
-                db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP });
-                db.ref(`users/${currentChatId}/chats/${myId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
+                db.ref(`users/${currentChatId}/chats/${myId}`).once('value', snap => {
+                    const unread = (snap.val()?.unread || 0) + 1;
+                    db.ref(`users/${currentChatId}/chats/${myId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread });
+                });
+            } else {
+                db.ref(`groups/${currentChatId}/members`).once('value', s => {
+                    const members = s.val() || {};
+                    Object.keys(members).forEach(uid => {
+                        db.ref(`users/${uid}/chats/${currentChatId}`).once('value', snap => {
+                            const unread = uid === myId ? 0 : ((snap.val()?.unread || 0) + 1);
+                            db.ref(`users/${uid}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread });
+                        });
+                    });
+                });
             }
+            return msgRef;
+        }
+
+        function setVoiceSpeed(id, speed, btn) {
+            const a = document.getElementById(id);
+            if(a) a.playbackRate = speed;
+            const box = btn?.parentElement;
+            if(box) box.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+        }
+
+        function toggleMessageReaction(mid, emoji='❤️') {
+            if(!currentChatId) return;
+            const cid = currentChatId.startsWith('group_') ? currentChatId : [myId, currentChatId].sort().join('_');
+            const ref = db.ref(`messages/${cid}/${mid}/reactions/${emoji}/${myId}`);
+            ref.once('value', s => s.exists() ? ref.remove() : ref.set(true));
+        }
+
+        function pickReaction(mid) {
+            const options = ['❤️','👍','👎'];
+            const picked = prompt('Reaction: ❤️ 👍 👎', '❤️');
+            if(options.includes(picked)) toggleMessageReaction(mid, picked);
+        }
+
+
+        function setReactionFromMenu(emoji) {
+            if(!selectedMsgId) return;
+            toggleMessageReaction(selectedMsgId, emoji);
+            hideAllMenus();
+        }
+
+        function openMediaViewer(data, kind='image') {
+            const modal = document.getElementById('media-viewer-modal');
+            const c = document.getElementById('media-viewer-content');
+            const save = document.getElementById('media-save-btn');
+            c.innerHTML = kind === 'video' ? `<video controls autoplay playsinline src="${data}"></video>` : `<img src="${data}" alt="preview">`;
+            save.href = data;
+            save.download = kind === 'video' ? 'video.mp4' : 'photo.jpg';
+            modal.style.display = 'flex';
+        }
+
+        function openGroupInfo() {
+            if(!currentChatId || !currentChatId.startsWith('group_')) return;
+            db.ref(`groups/${currentChatId}`).once('value', s => {
+                const g = s.val();
+                if(!g) return;
+                currentGroupData = { id: currentChatId, ...g };
+                document.getElementById('group-title-input').value = g.name || '';
+                document.getElementById('group-desc-input').value = g.description || '';
+                const av = document.getElementById('group-info-avatar');
+                av.style.backgroundImage = g.avatar ? `url(${g.avatar})` : '';
+                av.innerText = g.avatar ? '' : (g.name||'G')[0].toUpperCase();
+                document.getElementById('group-members-count').innerText = `${Object.keys(g.members||{}).length} участников`;
+                const canEdit = g.admin === myId;
+                document.getElementById('group-title-input').disabled = !canEdit;
+                document.getElementById('group-desc-input').disabled = !canEdit;
+                const list = document.getElementById('group-members-list');
+                list.innerHTML = '';
+                const ids = Object.keys(g.members||{});
+                ids.sort((a,b) => (a===g.admin?-1:b===g.admin?1:0));
+                ids.forEach(uid => {
+                    db.ref(`users/${uid}`).once('value', us => {
+                        const u = us.val() || {nick: uid};
+                        const row = document.createElement('div');
+                        row.className = 'member-row';
+                        row.innerHTML = `<div>${u.nick || uid}</div><div>${uid===g.admin?'<span class="member-role">создатель</span>':''}</div>`;
+                        if(canEdit && uid !== g.admin) {
+                            const btn = document.createElement('button'); btn.className='mini-btn'; btn.innerText='Передать права';
+                            btn.onclick = () => transferAdmin(uid);
+                            row.appendChild(btn);
+                        }
+                        list.appendChild(row);
+                    });
+                });
+                document.getElementById('group-info-modal').style.display = 'flex';
+            });
+        }
+
+        function saveGroupInfo() {
+            if(!currentGroupData || currentGroupData.admin !== myId) return alert('Только создатель может менять название и описание');
+            const name = document.getElementById('group-title-input').value.trim();
+            const description = document.getElementById('group-desc-input').value.trim();
+            if(!name) return alert('Введите название группы');
+            const oldName = currentGroupData.name || '';
+            const oldDesc = currentGroupData.description || '';
+            db.ref(`groups/${currentGroupData.id}`).update({ name, description });
+            if(name !== oldName) sendPayload({ type: 'text', text: '✏️ Создатель поменял название группы' });
+            if(description !== oldDesc) sendPayload({ type: 'text', text: '📝 Создатель поменял описание группы' });
+            document.getElementById('group-info-modal').style.display = 'none';
+        }
+
+
+        function transferAdmin(uid) {
+            if(!currentGroupData || currentGroupData.admin !== myId) return;
+            db.ref(`groups/${currentGroupData.id}`).update({ admin: uid });
+            sendPayload({ type: 'text', text: `👑 ${knownUsers[uid]?.nick || uid} теперь создатель группы` });
+            openGroupInfo();
+        }
+
+        function changeGroupAvatar(inp) {
+            const f = inp.files?.[0];
+            if(!f || !currentGroupData) return;
+            const r = new FileReader();
+            r.onload = e => {
+                db.ref(`groups/${currentGroupData.id}`).update({ avatar: e.target.result });
+                sendPayload({ type: 'text', text: `${myNick} поменял(а) аватарку группы` });
+                openGroupInfo();
+            };
+            r.readAsDataURL(f);
+        }
+
+        function openAddMembersModal() {
+            if(!currentGroupData) return;
+            const wrap = document.getElementById('group-add-members-list');
+            wrap.innerHTML = '';
+            db.ref(`users/${myId}/chats`).once('value', cs => {
+                const ids = Object.keys(cs.val() || {}).filter(uid => !uid.startsWith('group_') && uid !== myId && !(currentGroupData.members||{})[uid]);
+                ids.forEach(uid => {
+                    db.ref(`users/${uid}`).once('value', us => {
+                        const u = us.val() || {nick: uid};
+                        const row = document.createElement('div');
+                        row.className = 'member-row';
+                        row.innerHTML = `<label style="display:flex;gap:8px;align-items:center;width:100%;"><input type="checkbox" value="${uid}"><span>${u.nick || uid}</span></label>`;
+                        wrap.appendChild(row);
+                    });
+                });
+            });
+            document.getElementById('group-add-members-modal').style.display = 'flex';
+        }
+
+        function addSelectedMembers() {
+            if(!currentGroupData) return;
+            const cbs = document.querySelectorAll('#group-add-members-list input:checked');
+            const updates = {};
+            cbs.forEach(cb => updates[cb.value] = true);
+            if(!Object.keys(updates).length) return;
+            db.ref(`groups/${currentGroupData.id}/members`).update(updates);
+            Object.keys(updates).forEach(uid => db.ref(`users/${uid}/chats/${currentGroupData.id}`).update({lastMsg: 'Вас добавили в группу', timestamp: firebase.database.ServerValue.TIMESTAMP}));
+            sendPayload({ type:'text', text: `➕ ${Object.keys(updates).length} участник(а) добавлен(ы) в группу` });
+            document.getElementById('group-add-members-modal').style.display = 'none';
+            openGroupInfo();
         }
 
         /* ACTIONS */
@@ -1217,6 +1807,7 @@
             history.pushState({view: 'modal'}, '', '');
             
             document.getElementById('fab-menu').classList.remove('active'); 
+            document.getElementById('fab-main').classList.remove('rotate');
             document.getElementById('search-modal').style.display = 'flex'; 
             document.getElementById('search-input').focus(); 
             doSearch(); 
@@ -1225,17 +1816,44 @@
             const q = document.getElementById('search-input').value.toLowerCase();
             const res = document.getElementById('search-results');
             res.innerHTML = '';
-            db.ref('users').limitToLast(50).once('value', s => {
-                s.forEach(snap => {
-                    const u = snap.val();
-                    const uid = snap.key;
-                    if(uid !== myId && (!q || u.nick.toLowerCase().includes(q))) {
-                        const div = document.createElement('div');
-                        div.className = 'search-result-item';
-                        div.innerHTML = `<div class="search-avatar" style="${u.avatar?`background-image:url(${u.avatar})`:''}">${u.avatar?'':u.nick[0]}</div><div><div style="font-weight:bold;">${u.nick}</div></div>`;
-                        div.onclick = () => openUserPreview(uid, u);
-                        res.appendChild(div);
-                    }
+            const renderResult = (uid, u, subtitle = '') => {
+                const div = document.createElement('div');
+                div.className = 'search-result-item';
+                div.setAttribute('data-uid', uid);
+                div.innerHTML = `<div class="search-avatar" style="${u.avatar?`background-image:url(${u.avatar})`:''}">${u.avatar?'':(u.nick || u.name || '?')[0]}</div><div><div style="font-weight:bold;">${u.nick || u.name || uid}</div><div style="font-size:12px; opacity:.65;">${subtitle}</div></div>`;
+                div.onclick = () => openUserPreview(uid, u);
+                res.appendChild(div);
+            };
+            db.ref(`users/${myId}/chats`).once('value', chatsSnap => {
+                const chatIds = Object.keys(chatsSnap.val() || {}).filter(uid => !uid.startsWith('group_') && uid !== myId);
+                let foundLocal = 0;
+                chatIds.forEach(uid => {
+                    db.ref(`users/${uid}`).once('value', uSnap => {
+                        if(!uSnap.exists()) return;
+                        const u = uSnap.val();
+                        const nick = (u.nick || '').toLowerCase();
+                        if(!q || nick.startsWith(q) || nick.includes(q)) {
+                            foundLocal++;
+                            renderResult(uid, u, 'Ваши чаты');
+                        }
+                    });
+                });
+                db.ref('users').limitToLast(80).once('value', s => {
+                    s.forEach(snap => {
+                        const u = snap.val();
+                        const uid = snap.key;
+                        const nick = (u.nick || '').toLowerCase();
+                        if(uid !== myId && (!q || nick.startsWith(q) || nick.includes(q))) {
+                            if(!res.querySelector(`[data-uid="${uid}"]`)) {
+                                const div = document.createElement('div');
+                                div.className = 'search-result-item';
+                                div.setAttribute('data-uid', uid);
+                                div.innerHTML = `<div class="search-avatar" style="${u.avatar?`background-image:url(${u.avatar})`:''}">${u.avatar?'':(u.nick || '?')[0]}</div><div><div style="font-weight:bold;">${u.nick}</div><div style="font-size:12px; opacity:.65;">${foundLocal ? 'Другие пользователи' : 'Глобальный поиск'}</div></div>`;
+                                div.onclick = () => openUserPreview(uid, u);
+                                res.appendChild(div);
+                            }
+                        }
+                    });
                 });
             });
         }
@@ -1267,7 +1885,7 @@
             document.getElementById('gift-btn-preview').style.display = 'block';
         }
         function startChatFromPreview() { document.getElementById('user-preview-modal').style.display = 'none'; document.getElementById('search-modal').style.display = 'none'; openChat(previewUserId); }
-        function startCallFromPreview() { document.getElementById('user-preview-modal').style.display = 'none'; document.getElementById('search-modal').style.display = 'none'; currentChatId = previewUserId; initCall(); }
+        function startCallFromPreview() { if(previewUserId===myId) return alert('В избранное звонить нельзя'); document.getElementById('user-preview-modal').style.display = 'none'; document.getElementById('search-modal').style.display = 'none'; currentChatId = previewUserId; initCall(); }
 
         /* CALLS & UTILS */
         function startTimer() {
@@ -1290,59 +1908,74 @@
         }
 
         function initCall() {
-            if(!currentChatId) return;
-            // Get media with Video TRUE initially to get the track, then disable it
+            if(!currentChatId || currentChatId===myId) return;
+            callDirection = 'outgoing';
+            updateCallStatusText('Calling...');
             navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(stream => {
                 localStream = stream;
-                // Base: Camera OFF
+                currentFacingMode = 'user';
                 isCamOn = false;
                 localStream.getVideoTracks()[0].enabled = false;
                 
                 document.getElementById('btn-cam').classList.add('off');
                 document.getElementById('btn-cam').style.opacity = 0.5;
-
-                document.getElementById('call-modal').style.display = 'flex';
-                document.getElementById('active-actions').style.display = 'flex';
                 document.getElementById('local-video').style.display='block';
                 document.getElementById('local-video').srcObject = stream;
                 
-                // Get user name for header
                 db.ref(`users/${currentChatId}`).once('value', s => {
-                     document.getElementById('call-name').innerText = s.val() ? s.val().nick : currentChatId;
+                     const nick = s.val() ? s.val().nick : currentChatId;
+                     document.getElementById('call-name').innerText = nick;
+                     updateCallMiniBar(nick, 'Calling...', false);
                 });
 
                 const call = peer.call(currentChatId, stream);
                 activeCall = call;
                 const conn = peer.connect(currentChatId); 
                 activeConn = conn;
+                outgoingCallConn = conn;
                 setupConnectionEvents(conn);
                 
                 call.on('stream', rs => { 
                     startTimer();
-                    document.getElementById('call-status').innerText = "Connected";
+                    updateCallStatusText("Connected");
                     document.getElementById('call-placeholder').style.display='none'; 
                     const v = document.createElement('video'); 
                     v.srcObject=rs; 
                     v.autoplay=true; 
                     document.getElementById('remote-video-container').innerHTML=''; 
                     document.getElementById('remote-video-container').appendChild(v); 
+                    document.getElementById('incoming-actions').style.display='none';
+                    document.getElementById('active-actions').style.display='flex';
+                    toggleCallMinimize(true);
                 });
                 call.on('close', () => endCallUI(true));
+                call.on('error', () => endCallUI(true));
+                callActive = true;
+                callLogSent = false;
+                toggleCallMinimize(true);
             });
         }
 
         function handleIncomingCall(call) {
             currentChatId = call.peer;
-            document.getElementById('call-modal').style.display='flex';
+            callDirection = 'incoming';
+            callActive = true;
+            callLogSent = false;
             document.getElementById('incoming-actions').style.display='flex';
-            document.getElementById('call-status').innerText = "Incoming Call...";
-            db.ref(`users/${call.peer}`).once('value', s => { document.getElementById('call-name').innerText = s.val() ? s.val().nick : call.peer; });
+            document.getElementById('active-actions').style.display='none';
+            updateCallStatusText("Incoming Call...");
+            db.ref(`users/${call.peer}`).once('value', s => { 
+                const nick = s.val() ? s.val().nick : call.peer;
+                document.getElementById('call-name').innerText = nick;
+                updateCallMiniBar(nick, 'Incoming Call...', true);
+            });
+            toggleCallMinimize(true);
         }
 
         function answerCall() {
              navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(stream => {
                 localStream = stream;
-                // Base: Camera OFF
+                currentFacingMode = 'user';
                 isCamOn = false;
                 localStream.getVideoTracks()[0].enabled = false;
                 document.getElementById('btn-cam').classList.add('off');
@@ -1352,6 +1985,7 @@
                 const conn = peer.connect(activeCall.peer);
                 activeConn = conn;
                 setupConnectionEvents(conn);
+                if(activeConn) activeConn.send({ type: 'call-open' });
 
                 document.getElementById('incoming-actions').style.display='none';
                 document.getElementById('active-actions').style.display='flex';
@@ -1359,7 +1993,7 @@
                 document.getElementById('local-video').srcObject = stream;
                 
                 startTimer();
-                document.getElementById('call-status').innerText = "Connected";
+                updateCallStatusText("Connected");
 
                 activeCall.on('stream', rs => { 
                     document.getElementById('call-placeholder').style.display='none'; 
@@ -1370,31 +2004,48 @@
                     document.getElementById('remote-video-container').appendChild(v); 
                 });
                 activeCall.on('close', () => endCallUI(true));
+                activeCall.on('error', () => endCallUI(true));
+                callActive = true;
+                callLogSent = false;
+                openCallModal();
              });
         }
 
         function declineCall() { 
+            if(activeConn) activeConn.send({ type: 'reject' });
+            if(outgoingCallConn) outgoingCallConn.send({ type: 'reject' });
             if(activeCall) { activeCall.close(); activeCall=null; } 
-            endCallUI(); 
+            endCallUI(true); 
         }
 
         function endCall() { 
-            if(activeCall) activeCall.close(); 
             if(activeConn) activeConn.send({ type: 'hangup' });
+            if(outgoingCallConn) outgoingCallConn.send({ type: 'hangup' });
+            if(activeCall) activeCall.close(); 
             endCallUI(); 
         }
 
         function endCallUI(remoteHangup) { 
             const duration = stopTimer();
-            if(document.getElementById('call-modal').style.display === 'flex' && callSeconds > 0) {
+            if(callActive && !callLogSent && callSeconds > 0 && !remoteHangup) {
+                 callLogSent = true;
                  sendPayload({ type: 'call_log', text: duration });
             }
             document.getElementById('call-modal').style.display='none'; 
+            document.getElementById('call-mini-bar').style.display='none';
+            document.getElementById('incoming-actions').style.display='none';
+            document.getElementById('active-actions').style.display='none';
             if(localStream) localStream.getTracks().forEach(t=>t.stop()); 
             document.getElementById('remote-video-container').innerHTML=''; 
             document.getElementById('remote-status-muted').classList.remove('active');
+            document.getElementById('local-video').style.display='none';
             activeCall = null;
             activeConn = null;
+            outgoingCallConn = null;
+            callActive = false;
+            callDirection = null;
+            callMinimized = false;
+            callSeconds = 0;
         }
 
         function toggleMic() { 
@@ -1402,9 +2053,13 @@
             localStream.getAudioTracks()[0].enabled = isMicOn; 
             document.getElementById('btn-mic').style.opacity = isMicOn ? 1 : 0.5; 
             if(activeConn) activeConn.send({ type: 'mic-toggle', value: isMicOn });
+            updateCallStatusText(isMicOn ? 'Вы включили микрофон' : 'Вы выключили микрофон');
+            setTimeout(() => {
+                if(callActive) updateCallStatusText(callSeconds > 0 ? 'Connected' : 'Calling...');
+            }, 1800);
         }
 
-        function toggleCam() { 
+        async function toggleCam() { 
             isCamOn = !isCamOn; 
             localStream.getVideoTracks()[0].enabled = isCamOn; 
             if(isCamOn) {
@@ -1416,8 +2071,38 @@
             }
         }
 
-        function toggleFab(e) { e.stopPropagation(); document.getElementById('fab-menu').classList.toggle('active'); }
-        function hideAllMenus() { document.getElementById('chat-menu').style.display='none'; document.getElementById('msg-menu').style.display='none'; document.getElementById('fab-menu').classList.remove('active'); }
+        async function switchCameraFacing() {
+            if(!localStream) return;
+            const newFacing = currentFacingMode === 'user' ? 'environment' : 'user';
+            try {
+                const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: newFacing } }, audio: false });
+                const newTrack = newStream.getVideoTracks()[0];
+                newTrack.enabled = isCamOn;
+                const oldTrack = localStream.getVideoTracks()[0];
+                localStream.removeTrack(oldTrack);
+                oldTrack.stop();
+                localStream.addTrack(newTrack);
+                document.getElementById('local-video').srcObject = null;
+                document.getElementById('local-video').srcObject = localStream;
+                const sender = activeCall?.peerConnection?.getSenders?.().find(s => s.track && s.track.kind === 'video');
+                if(sender) sender.replaceTrack(newTrack);
+                currentFacingMode = newFacing;
+            } catch(e) {
+                alert('Не удалось переключить камеру');
+            }
+        }
+
+        function toggleFab(e) { 
+            e.stopPropagation(); 
+            document.getElementById('fab-menu').classList.toggle('active');
+            document.getElementById('fab-main').classList.toggle('rotate');
+        }
+        function hideAllMenus() { 
+            document.getElementById('chat-menu').style.display='none'; 
+            document.getElementById('msg-menu').style.display='none'; 
+            document.getElementById('fab-menu').classList.remove('active');
+            document.getElementById('fab-main').classList.remove('rotate');
+        }
         
         // FIX: Add history handling for Tab Switching
         function switchTab(t, fromBack = false) { 
@@ -1443,7 +2128,8 @@
         function logout() { localStorage.removeItem('sladkiy_session_user'); localStorage.removeItem('sladkiy_trusted_' + myId); location.reload(); }
         function saveProfile() { db.ref(`users/${myId}`).update({bio:document.getElementById('edit-bio').value}); alert("Saved"); }
         function uploadAvatar(inp) { const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload=e=>{ myAvatar=e.target.result; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:myAvatar}); }; r.readAsDataURL(f); }
-        function updateProfileUI() { document.getElementById('my-profile-pic').style.backgroundImage = myAvatar?`url(${myAvatar})`:''; document.getElementById('profile-nick-display').innerText = myNick; }
+        function removeAvatar() { myAvatar=''; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:''}); }
+        function updateProfileUI() { const el = document.getElementById('my-profile-pic'); el.style.backgroundImage = myAvatar?`url(${myAvatar})`:''; el.innerText = myAvatar ? '' : (myNick||'U').replace('$','')[0].toUpperCase(); document.getElementById('profile-nick-display').innerText = myNick; }
         function openLegalModal() { document.getElementById('legal-modal').style.display = 'flex'; }
 
         // === SYSTEM BACK BUTTON HANDLER (NEW) ===

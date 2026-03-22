@@ -1,0 +1,9 @@
+{
+  "name": "Sladkiygramm",
+  "short_name": "Sladkiy",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f0c29",
+  "theme_color": "#d946ef",
+  "icons": []
+}
