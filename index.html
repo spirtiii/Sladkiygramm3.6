@@ -1136,6 +1136,15 @@
             el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div><div class="unread-badge" style="display:${(c.unread||0)>0?'inline-flex':'none'}">${c.unread||''}</div>`;
             if((c.unread||0)>0) el.classList.add('unread-glow');
             container.appendChild(el); 
+            if(isFavoritesChat(c.id)) {
+                const av = el.querySelector('.avatar');
+                av.style.background = 'linear-gradient(135deg, #2b7cff, #66b3ff)';
+                av.innerHTML = '<i class="fas fa-bookmark"></i>';
+                av.style.fontSize = '20px';
+                el.querySelector('.chat-name').innerText = 'Избранное';
+                el.querySelector('.last-msg').innerText = c.lastMsg || 'Личные заметки';
+                return;
+            }
             db.ref(c.id.startsWith('group_') ? `groups/${c.id}` : `users/${c.id}`).on('value', s => {
                 const u = s.val();
                 if(u) {
@@ -1190,6 +1199,11 @@
 
         function deleteChat(everyone) {
             const cid = selectedIdForMenu;
+            if(isFavoritesChat(cid)) {
+                showToast('Избранное нельзя удалить');
+                document.getElementById('delete-chat-modal').style.display='none';
+                return;
+            }
             db.ref(`users/${myId}/chats/${cid}`).remove();
             const el = document.getElementById(`chat-${cid}`); if(el) el.remove();
 
@@ -1266,13 +1280,26 @@
             setLang(currentLang); 
 
             const isGroup = id.startsWith('group_');
-            const cid = isGroup ? id : [myId, id].sort().join('_');
+            const isFavorites = isFavoritesChat(id);
+            const cid = isFavorites ? getFavoritesMessagePath() : (isGroup ? id : [myId, id].sort().join('_'));
 
-            if(isGroup) {
+            if(isFavorites) {
+                document.getElementById('room-name').innerText = 'Избранное';
+                const hAv = document.getElementById('room-header-avatar');
+                hAv.style.background = 'linear-gradient(135deg, #2b7cff, #66b3ff)';
+                hAv.style.backgroundImage = '';
+                hAv.innerHTML = '<i class="fas fa-bookmark"></i>';
+                hAv.parentElement.onclick = null;
+                document.getElementById('room-status').innerText = 'Личные заметки';
+                document.getElementById('typing-bubble').classList.remove('active');
+            } else if(isGroup) {
                  db.ref(`groups/${id}`).on('value', s => {
                     const u = s.val(); if(!u) return;
                     document.getElementById('room-name').innerText = u.name;
-                    document.getElementById('room-header-avatar').innerHTML = '<i class="fas fa-users"></i>';
+                    const groupAvatar = document.getElementById('room-header-avatar');
+                    groupAvatar.style.background = '';
+                    groupAvatar.style.backgroundImage = '';
+                    groupAvatar.innerHTML = '<i class="fas fa-users"></i>';
                     currentGroupData = { id, ...u };
                     document.getElementById('room-header-avatar').parentElement.onclick = () => openGroupInfo();
                     db.ref(`groups/${id}/typing`).on('value', t => {
@@ -1300,6 +1327,7 @@
                     const u = s.val(); if(!u) return;
                     document.getElementById('room-name').innerText = u.nick;
                     const hAv = document.getElementById('room-header-avatar');
+                    hAv.style.background = '';
                     hAv.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
                     hAv.innerText = u.avatar ? '' : (u.name||u.nick)[0].toUpperCase();
                     hAv.parentElement.onclick = (e) => {
@@ -1368,6 +1396,7 @@
 
         function handleTyping() {
             if(!currentChatId) return;
+            if(isFavoritesChat(currentChatId)) return;
             const isGroup = currentChatId.startsWith('group_');
             if(isGroup) db.ref(`groups/${currentChatId}/typing/${myId}`).set(true);
             else db.ref(`users/${myId}/chats/${currentChatId}/typing`).set(true);
@@ -1480,13 +1509,15 @@
             document.getElementById('msg-input').value = '';
             mediaDraftCaption = '';
             updateSendButtonState();
+            if(isFavoritesChat(currentChatId)) return;
             if(currentChatId.startsWith('group_')) db.ref(`groups/${currentChatId}/typing/${myId}`).remove();
             else db.ref(`users/${myId}/chats/${currentChatId}/typing`).set(false);
         }
 
         function sendPayload(data) {
             const isGroup = currentChatId.startsWith('group_');
-            const cid = isGroup ? currentChatId : [myId, currentChatId].sort().join('_');
+            const isFavorites = isFavoritesChat(currentChatId);
+            const cid = isFavorites ? getFavoritesMessagePath() : (isGroup ? currentChatId : [myId, currentChatId].sort().join('_'));
             const payload = { from: myId, fromNick: myNick, text: data.text || '', type: data.type || 'text', time: firebase.database.ServerValue.TIMESTAMP, status: 'sent' };
             if(data.type === 'gift') { payload.giftIcon = data.giftIcon; payload.giftLabel = data.giftLabel; payload.giftType = data.giftType; }
             if(data.type === 'media') payload.media = data.media || [];
@@ -1494,7 +1525,9 @@
             if(replyingTo) { payload.replyTo = replyingTo; cancelReply(); }
             const msgRef = db.ref(`messages/${cid}`).push(payload);
             const lastTxt = data.type === 'gift' ? '🎁 Gift sent' : (data.type === 'call_log' ? 'Call ended' : data.type === 'media' ? '📎 Media' : data.type === 'voice' ? '🎤 Voice message' : payload.text || 'Message');
-            if(!isGroup) {
+            if(isFavorites) {
+                db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
+            } else if(!isGroup) {
                 db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
                 db.ref(`users/${currentChatId}/chats/${myId}`).once('value', snap => {
                     const unread = (snap.val()?.unread || 0) + 1;
@@ -1734,7 +1767,7 @@
         
         // --- NEW FUNCTION: Open Profile from Chat Header ---
         function viewUserProfile() {
-            if(!currentChatId || currentChatId.startsWith('group_')) return;
+            if(!currentChatId || currentChatId.startsWith('group_') || isFavoritesChat(currentChatId)) return;
             const u = knownUsers[currentChatId];
             if(u) {
                 openUserPreview(currentChatId, u);
