@@ -71,8 +71,11 @@
         .chat-item.unread-glow { border-left: 4px solid #00e676; background: linear-gradient(90deg, rgba(0,230,118,0.1), transparent); box-shadow: 0 0 15px rgba(0,230,118,0.2); }
         .chat-item.pinned { border: 1px solid var(--primary); background: rgba(255,255,255,0.08); order: -1 !important; }
         .chat-item.archived-item { opacity: 0.92; }
+        .chat-item.muted-chat .chat-name::after { content: ' \f1f6'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 11px; opacity: 0.75; margin-left: 5px; }
         .pin-indicator { position: absolute; top: 5px; right: 5px; font-size: 10px; color: var(--primary); display: none; }
         .chat-item.pinned .pin-indicator { display: block; }
+        .mute-indicator { position:absolute; top:5px; right:22px; font-size:10px; color:#ffd166; display:none; }
+        .chat-item.muted-chat .mute-indicator { display:block; }
 
         .avatar { width: 50px; height: 50px; border-radius: 50%; background-size: cover; background-position: center; background-color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: white; margin-right: 15px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); position: relative; text-transform: uppercase; }
         .avatar.online::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: #00e676; border-radius: 50%; border: 2px solid #fff; }
@@ -165,6 +168,8 @@
         .msg-media-grid.cols-1 { grid-template-columns: 1fr; }
         .msg-media-grid.cols-2, .msg-media-grid.cols-3 { grid-template-columns: 1fr 1fr; }
         .msg-media-grid img, .msg-media-grid video { width: 100%; border-radius: 10px; max-height: 180px; object-fit: cover; }
+        .msg-media-grid .video-note { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+        .video-note-badge { display:inline-flex; align-items:center; gap:6px; font-size: 11px; margin-bottom: 6px; opacity: 0.9; padding: 3px 8px; border-radius: 12px; background: rgba(0,0,0,0.2); }
         .msg-voice { display:flex; flex-direction:column; gap:6px; min-width:220px; }
         .voice-controls { display:flex; align-items:center; gap:6px; flex-wrap: wrap; }
         .speed-btn { border:none; border-radius:10px; padding:4px 7px; background: rgba(255,255,255,0.15); color: var(--text); font-size:10px; cursor:pointer; }
@@ -219,7 +224,11 @@
         .context-menu.show-anim { animation: menuPop .22s ease; }
         @keyframes menuPop { from { opacity:0; transform: scale(0.92) translateY(8px); } to { opacity:1; transform: scale(1) translateY(0); } }
         .ctx-item { padding: 14px 20px; cursor: pointer; display: flex; gap: 12px; align-items: center; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        #chat-menu, #msg-menu { display:none; flex-direction:column; }
+        #msg-menu .reaction-picker { flex-direction: column; }
         .ctx-delete { color: #ff4444; }
+        .liquid-card { background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06)); border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); box-shadow: 0 14px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18); border-radius: 24px; }
+        .join-preview-card { display:flex; align-items:center; gap:12px; margin: 16px 0; text-align:left; padding: 12px; border-radius: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); }
 
         /* PROFILE SPECIFIC */
         .profile-container { padding: 20px; text-align: center; }
@@ -420,6 +429,10 @@
                 <div class="lang-btn" onclick="setLang('ru')" id="set-ru">Русский</div>
             </div>
             <h3 style="margin-top: 25px; margin-bottom: 10px;" data-key="theme">Theme</h3>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button class="btn" style="padding:10px 12px;" onclick="setDayNightTheme('day')" data-key="day_theme">Day Theme</button>
+                <button class="btn" style="padding:10px 12px;" onclick="setDayNightTheme('night')" data-key="night_theme">Night Theme</button>
+            </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div onclick="setTheme('theme-space')" id="theme-space" class="btn" style="background:#302b63;">Space</div>
                 <div onclick="setTheme('theme-sunset')" id="theme-sunset" class="btn" style="background:#ff5e62;">Sunset</div>
@@ -610,7 +623,7 @@
             <i class="fas fa-box-archive"></i> <span id="chat-archive-label">В архив</span>
         </div>
         <div class="ctx-item" onclick="toggleMuteSelectedChat()">
-            <i class="fas fa-bell-slash"></i> <span id="chat-mute-label">Выключить уведомления</span>
+            <i class="fas fa-bell-slash" id="chat-mute-icon"></i> <span id="chat-mute-label">Выключить уведомления</span>
         </div>
         <div class="ctx-item ctx-delete" onclick="showDeleteChatOptions()">
             <i class="fas fa-trash"></i> <span data-key="delete">Delete Chat</span>
@@ -651,16 +664,32 @@
 
     <!-- CREATE GROUP MODAL -->
     <div id="group-create-modal" class="modal">
-        <div class="modal-content glass-panel">
+        <div class="modal-content liquid-card" style="max-width:420px;text-align:center;">
             <span class="close-modal" onclick="document.getElementById('group-create-modal').style.display='none'">&times;</span>
             <h3 data-key="create_group">Create Group</h3>
             <input type="text" id="group-name-input" placeholder="Group Name">
             <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:6px 0 8px;">
-                <input type="checkbox" id="group-is-channel"> <span>Private channel (admins post only)</span>
+                <input type="checkbox" id="group-is-channel"> <span data-key="create_channel">Create channel</span>
             </label>
             <p style="text-align:left; font-size:13px; margin-top:15px; opacity:0.7;" data-key="select_members">Select Members:</p>
             <div id="group-user-list" style="max-height:150px; overflow-y:auto; text-align:left; border:1px solid rgba(255,255,255,0.1); padding:5px; border-radius:10px; margin:10px 0;"></div>
             <button class="btn" onclick="createGroup()" data-key="create">Create</button>
+        </div>
+    </div>
+
+    <div id="join-confirm-modal" class="modal">
+        <div class="modal-content liquid-card" style="max-width:420px;">
+            <span class="close-modal" onclick="document.getElementById('join-confirm-modal').style.display='none'">&times;</span>
+            <h3 data-key="join_title">Join by link</h3>
+            <p id="join-confirm-text" style="font-size:13px;opacity:.82;margin-top:8px;">...</p>
+            <div class="join-preview-card">
+                <div id="join-preview-avatar" class="avatar" style="margin-right:0;"></div>
+                <div>
+                    <div id="join-preview-name" style="font-weight:700;">...</div>
+                    <div id="join-preview-type" style="font-size:12px;opacity:.75;">...</div>
+                </div>
+            </div>
+            <button class="btn" onclick="confirmJoinGroupByLink()" data-key="join_btn">Join</button>
         </div>
     </div>
 
@@ -748,7 +777,10 @@
                 online: "online", last_seen: "Last seen", typing: "typing...", just_now: "just now", at: "at", select_members: "Select Members:",
                 peer_muted: "Peer turned off mic", call_ended: "Call ended", duration: "Duration", call_back: "Call Back",
                 muted: "Notifications off", unmuted: "Notifications on", mute_chat: "Mute chat", unmute_chat: "Unmute chat",
-                group_name: "Group name", group_desc: "Description", save_done: "Saved", channel_readonly: "Only admins can post in this channel", invite_link: "Invite link"
+                group_name: "Group name", group_desc: "Description", save_done: "Saved", channel_readonly: "Only admins can post in this channel", invite_link: "Invite link",
+                create_channel: "Create channel", day_theme: "Day Theme", night_theme: "Night Theme", join_title: "Join by link", join_btn: "Join",
+                join_need_auth: "Sign in first to join this chat", join_confirm: "Do you really want to join", channel_type: "Channel", group_type: "Group",
+                invalid_link: "Invalid invite link", join_success: "You joined successfully", join_denied: "Invite link is invalid"
             },
             ru: {
                 slogan: "Твой тот самый сладкий мессенджер!", login_btn: "Полететь 🚀", chats: "Чаты", settings: "Настройки", profile: "Профиль", theme: "Тема", logout: "Выйти", save: "Сохранить",
@@ -764,7 +796,10 @@
                 online: "в сети", last_seen: "Был(а)", typing: "печатает...", just_now: "только что", at: "в", select_members: "Выберите участников:",
                 peer_muted: "Собеседник выключил микро", call_ended: "Звонок завершен", duration: "Длительность", call_back: "Перезвонить",
                 muted: "Уведомления выключены", unmuted: "Уведомления включены", mute_chat: "Выключить уведомления", unmute_chat: "Включить уведомления",
-                group_name: "Название", group_desc: "Описание", save_done: "Сохранено", channel_readonly: "В канале писать может только админ", invite_link: "Ссылка-приглашение"
+                group_name: "Название", group_desc: "Описание", save_done: "Сохранено", channel_readonly: "В канале писать может только админ", invite_link: "Ссылка-приглашение",
+                create_channel: "Создать канал", day_theme: "Дневная тема", night_theme: "Ночная тема", join_title: "Вступление по ссылке", join_btn: "Присоединиться",
+                join_need_auth: "Сначала зарегистрируйтесь, чтобы вступить", join_confirm: "Вы точно хотите присоединиться к", channel_type: "Канал", group_type: "Группа",
+                invalid_link: "Неверная ссылка приглашения", join_success: "Вы успешно вступили", join_denied: "Ссылка приглашения недействительна"
             }
         };
 
@@ -799,6 +834,7 @@
         let activeChatListeners = [];
         let chatMetaMap = {};
         let currentChatAccess = { blockedByMe: false, blockedMe: false };
+        let pendingJoinData = null;
 
         window.onload = () => {
             try {
@@ -821,6 +857,7 @@
 
                 const savedSession = localStorage.getItem('sladkiy_session_user');
                 if (savedSession) { myId = savedSession; myNick = localStorage.getItem('sladkiy_session_nick'); startApp(); }
+                processJoinInviteFromUrl();
             } catch(e) { console.error(e); }
         };
 
@@ -973,12 +1010,67 @@
             document.getElementById(t).classList.add('selected-border');
         }
 
+        function setDayNightTheme(mode='night') {
+            setTheme(mode === 'day' ? 'theme-light' : 'theme-dark');
+        }
+
         function registerServiceWorker() {
             if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
         }
 
         function requestNotifPermission() {
             if('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {});
+        }
+
+        function parseJoinLink() {
+            const pathMatch = window.location.pathname.match(/\/join\/([^/?#]+)/);
+            const token = new URLSearchParams(window.location.search).get('token');
+            if(!pathMatch || !pathMatch[1] || !token) return null;
+            return { gid: decodeURIComponent(pathMatch[1]), token };
+        }
+
+        function processJoinInviteFromUrl() {
+            const invite = parseJoinLink();
+            if(!invite) return;
+            if(!myId) {
+                showToast(langData[currentLang].join_need_auth);
+                return;
+            }
+            db.ref(`groups/${invite.gid}`).once('value', snap => {
+                const g = snap.val();
+                if(!g || g.inviteToken !== invite.token) {
+                    showToast(langData[currentLang].invalid_link);
+                    return;
+                }
+                pendingJoinData = { gid: invite.gid, token: invite.token, group: g };
+                const av = document.getElementById('join-preview-avatar');
+                av.style.backgroundImage = g.avatar ? `url(${g.avatar})` : '';
+                av.innerHTML = g.avatar ? '' : '<i class="fas fa-users"></i>';
+                document.getElementById('join-preview-name').innerText = g.name || invite.gid;
+                document.getElementById('join-preview-type').innerText = g.isChannel ? langData[currentLang].channel_type : langData[currentLang].group_type;
+                document.getElementById('join-confirm-text').innerText = `${langData[currentLang].join_confirm} ${(g.isChannel ? langData[currentLang].channel_type : langData[currentLang].group_type).toLowerCase()} “${g.name || invite.gid}”?`;
+                document.getElementById('join-confirm-modal').style.display = 'flex';
+            });
+        }
+
+        function confirmJoinGroupByLink() {
+            if(!pendingJoinData || !myId) return;
+            const { gid, token, group } = pendingJoinData;
+            if(group.inviteToken !== token) {
+                showToast(langData[currentLang].join_denied);
+                return;
+            }
+            db.ref(`groups/${gid}/members/${myId}`).set(true);
+            db.ref(`users/${myId}/chats/${gid}`).update({
+                lastMsg: group.isChannel ? 'Channel joined' : 'Group joined',
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                unread: 0
+            });
+            document.getElementById('join-confirm-modal').style.display = 'none';
+            history.replaceState({}, '', window.location.origin + window.location.pathname.replace(/\/join\/[^/?#]+/, '/'));
+            showToast(langData[currentLang].join_success);
+            openChat(gid);
+            pendingJoinData = null;
         }
 
         function updateSendButtonState() {
@@ -1114,7 +1206,7 @@
             return new Promise(resolve => {
                 if((file.type || '').startsWith('video/')) {
                     const r = new FileReader();
-                    r.onload = e => resolve({ kind:'video', data: e.target.result, name:file.name || `video_${idx+1}.mp4` });
+                    r.onload = e => resolve({ kind:'video', data: e.target.result, name:file.name || `video_${idx+1}.mp4`, isVideoNote: true });
                     r.readAsDataURL(file);
                     return;
                 }
@@ -1259,6 +1351,7 @@
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-screen').classList.add('active');
             loadChats();
+            processJoinInviteFromUrl();
         }
 
         function setupConnectionEvents(conn) {
@@ -1323,7 +1416,7 @@
 
         function renderChatItem(c, container) {
             const el = document.createElement('div');
-            el.className = `chat-item glass-panel ${c.pinned ? 'pinned' : ''} ${c.archived ? 'archived-item' : ''}`;
+            el.className = `chat-item glass-panel ${c.pinned ? 'pinned' : ''} ${c.archived ? 'archived-item' : ''} ${c.muted ? 'muted-chat' : ''}`;
             el.id = `chat-${c.id}-${c.archived ? 'archive' : 'main'}`;
             el.dataset.chatId = c.id;
             el.dataset.timestamp = c.timestamp || 0;
@@ -1333,7 +1426,7 @@
             el.ontouchstart = (e) => { timer = setTimeout(() => { showChatContext(e.touches[0], c.id); }, 600); }
             el.ontouchend = () => clearTimeout(timer);
             const showUnread = (c.unread || 0) > 0 && !c.muted;
-            el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div><div class="unread-badge" style="display:${showUnread?'inline-flex':'none'}">${showUnread ? (c.unread||'') : ''}</div>`;
+            el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><i class="fas fa-bell-slash mute-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div><div class="unread-badge" style="display:${showUnread?'inline-flex':'none'}">${showUnread ? (c.unread||'') : ''}</div>`;
             if(showUnread) el.classList.add('unread-glow');
             container.appendChild(el);
             if(isFavoritesChat(c.id)) {
@@ -1387,6 +1480,8 @@
              document.getElementById('chat-block-label').innerText = chat.blockedByMe ? 'Разблокировать' : 'Заблокировать';
              document.getElementById('chat-archive-label').innerText = chat.archived ? 'Достать из архивов' : 'В архив';
              document.getElementById('chat-mute-label').innerText = chat.muted ? langData[currentLang].unmute_chat : langData[currentLang].mute_chat;
+             const muteIcon = document.getElementById('chat-mute-icon');
+             muteIcon.className = chat.muted ? 'fas fa-bell' : 'fas fa-bell-slash';
              menu.style.display = 'flex';
              menu.classList.add('show-anim');
              menu.style.top = Math.min(window.innerHeight - 260, Math.max(90, e.clientY)) + 'px';
@@ -1502,7 +1597,7 @@
 
             const isChannel = document.getElementById('group-is-channel')?.checked;
             const inviteToken = Math.random().toString(36).slice(2, 10);
-            const fixedPrefix = isChannel ? (currentLang === 'ru' ? 'Это моя ссылка на группу: ' : 'This is my group link: ') : '';
+            const fixedPrefix = isChannel ? (currentLang === 'ru' ? 'Это моя ссылка на канал: ' : 'This is my channel link: ') : '';
             db.ref(`groups/${gid}`).set({
                 name: name,
                 members: members,
@@ -1511,7 +1606,7 @@
                 onlineCount: 1,
                 avatar: '',
                 isChannel: !!isChannel,
-                isPrivate: !!isChannel,
+                isPrivate: true,
                 inviteToken,
                 fixedPrefix,
                 inviteLink: `https://sladkiy.app/join/${gid}?token=${inviteToken}`
@@ -1754,7 +1849,11 @@
                 const media = msg.media || [];
                 content += `<div class="msg-media-grid cols-${Math.min(media.length,3)}">`;
                 media.forEach(m => {
-                    if(m.kind === 'video') content += `<video controls playsinline src="${m.data}" onclick="event.stopPropagation();openMediaViewer('${m.data}','video')"></video>`;
+                    if(m.kind === 'video') {
+                        const noteClass = m.isVideoNote ? 'video-note' : '';
+                        if(m.isVideoNote) content += `<div class="video-note-badge"><i class="fas fa-circle-play"></i> Video note</div>`;
+                        content += `<video controls playsinline class="${noteClass}" src="${m.data}" onclick="event.stopPropagation();openMediaViewer('${m.data}','video')"></video>`;
+                    }
                     else if(m.kind === 'file') {
                         const safeName = (m.name || 'file').replace(/</g, '&lt;');
                         content += `<div class="msg-file-list"><div class="msg-file-item"><span class="msg-file-name"><i class="fas fa-file"></i> ${safeName}</span><a class="msg-file-download" href="${m.data}" download="${safeName}" onclick="event.stopPropagation()">Download</a></div></div>`;
@@ -1798,9 +1897,10 @@
                 menu.setAttribute('data-text', msg.type==='gift' ? 'Gift' : msg.text);
                 menu.setAttribute('data-nick', msg.fromNick);
                 menu.setAttribute('data-gift-type', msg.giftType || '');
-                menu.style.top = Math.min(window.innerHeight - 280, Math.max(90, y)) + 'px';
+                const preferredTop = y - 220;
+                menu.style.top = Math.max(70, preferredTop) + 'px';
                 menu.style.left = (window.innerWidth/2 - 90) + 'px';
-                menu.style.display = 'block';
+                menu.style.display = 'flex';
                 menu.classList.add('show-anim');
             };
             div.onmousedown = e => { e.stopPropagation(); holdTimer = setTimeout(() => openMenu(e.clientX, e.clientY), 380); };
@@ -1923,9 +2023,9 @@
                 av.style.backgroundImage = g.avatar ? `url(${g.avatar})` : '';
                 av.innerHTML = g.avatar ? '' : '<i class="fas fa-users"></i>';
                 const linkBox = document.getElementById('group-link-box');
-                if(g.isChannel && g.isPrivate && g.inviteLink) {
+                if(g.inviteLink) {
                     linkBox.style.display = 'block';
-                    linkBox.innerHTML = `${langData[currentLang].invite_link}: <a href="${g.inviteLink}" target="_blank">${g.inviteLink}</a>`;
+                    linkBox.innerHTML = `${langData[currentLang].invite_link}: <a href="${g.inviteLink}" target="_self">${g.inviteLink}</a>`;
                 } else linkBox.style.display = 'none';
                 const canEdit = g.admin === myId;
                 document.getElementById('group-title-input').disabled = !canEdit;
