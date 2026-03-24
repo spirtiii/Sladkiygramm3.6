@@ -163,6 +163,15 @@
         .media-preview-meta { font-size: 11px; opacity: 0.8; white-space: nowrap; }
         .voice-recording { display:none; font-size: 12px; color: #ff7b7b; font-weight: 700; align-items: center; gap: 6px; }
         .voice-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3b3b; animation: blink 1s infinite; }
+        .video-note-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.08); flex-shrink: 0; transition: 0.2s; }
+        .video-note-btn.disabled { opacity: 0.45; pointer-events: none; box-shadow: none; }
+        .video-note-btn.recording { background: rgba(255,59,59,0.24); border-color: rgba(255,90,90,0.5); box-shadow: 0 0 0 2px rgba(255,59,59,0.18); }
+        .video-note-overlay { position: fixed; right: 14px; bottom: 90px; width: 170px; border-radius: 20px; overflow: hidden; z-index: 120; display: none; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); box-shadow: 0 14px 36px rgba(0,0,0,0.35); }
+        .video-note-overlay.active { display: block; }
+        .video-note-preview { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; background: #111; transform: scaleX(-1); }
+        .video-note-status { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11px; padding:8px; }
+        .video-note-status .voice-dot { width: 7px; height: 7px; }
+        .video-note-switch { border:none; border-radius:10px; padding:6px 8px; background:rgba(255,255,255,0.18); color:white; cursor:pointer; font-size:11px; }
         @keyframes blink { 50% { opacity: 0.2; } }
         .msg-media-grid { display: grid; gap: 4px; margin-bottom: 6px; }
         .msg-media-grid.cols-1 { grid-template-columns: 1fr; }
@@ -220,7 +229,7 @@
         @keyframes bounceGift { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15) rotate(5deg); } }
 
         /* CONTEXT MENUS */
-        .context-menu { position: fixed; display: none; background: rgba(20,20,30,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; z-index: 400; box-shadow: 0 10px 40px rgba(0,0,0,0.6); min-width: 180px; overflow: hidden; transform-origin: top left; }
+        .context-menu { position: fixed; display: none; flex-direction: column; background: rgba(20,20,30,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; z-index: 400; box-shadow: 0 10px 40px rgba(0,0,0,0.6); min-width: 180px; overflow: hidden; transform-origin: top left; }
         .context-menu.show-anim { animation: menuPop .22s ease; }
         @keyframes menuPop { from { opacity:0; transform: scale(0.92) translateY(8px); } to { opacity:1; transform: scale(1) translateY(0); } }
         .ctx-item { padding: 14px 20px; cursor: pointer; display: flex; gap: 12px; align-items: center; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -503,8 +512,16 @@
                 <div class="attach-btn" onclick="document.getElementById('media-input').click()"><i class="fas fa-plus"></i></div>
                 <input type="text" id="msg-input" style="margin: 0; background: rgba(255,255,255,0.08); border: none;" placeholder="Message..." autocomplete="off">
                 <div id="voice-recording" class="voice-recording"><span class="voice-dot"></span><span id="voice-recording-time">00:00.000</span></div>
+                <div id="video-note-btn" class="video-note-btn" title="Зажми для видео заметки"><i class="fas fa-circle"></i></div>
                 <div class="send-btn" id="send-btn" onclick="handleSendAction()"><i class="fas fa-paper-plane"></i></div>
             </div>
+        </div>
+    </div>
+    <div id="video-note-overlay" class="video-note-overlay">
+        <video id="video-note-preview" class="video-note-preview" autoplay muted playsinline></video>
+        <div class="video-note-status">
+            <span><span class="voice-dot"></span> <span id="video-note-time">00:00.000</span></span>
+            <button id="video-note-switch" class="video-note-switch" type="button"><i class="fas fa-rotate"></i></button>
         </div>
     </div>
 
@@ -824,6 +841,10 @@
         let voiceTimerInt = null;
         let voiceRecordStart = 0;
         let justFinishedHoldRecord = false;
+        let activeVideoNoteRecord = null;
+        let videoNoteTimerInt = null;
+        let videoNoteRecordStart = 0;
+        let justFinishedVideoHold = false;
         let currentGroupData = null;
         const FAVORITES_CHAT_ID = 'favorites';
         let currentCallSessionId = null;
@@ -852,6 +873,7 @@
 
                 document.getElementById('msg-input').addEventListener('input', () => { handleTyping(); updateSendButtonState(); mediaDraftCaption = document.getElementById('msg-input').value; });
                 setupVoiceHandlers();
+                setupVideoNoteHandlers();
                 registerServiceWorker();
                 requestNotifPermission();
 
@@ -1076,9 +1098,11 @@
         function updateSendButtonState() {
             const txt = document.getElementById('msg-input').value.trim();
             const btn = document.getElementById('send-btn');
+            const videoBtn = document.getElementById('video-note-btn');
             if(!btn) return;
             btn.innerHTML = txt || selectedMedia.length ? '<i class="fas fa-paper-plane"></i>' : '<i class="fas fa-microphone"></i>';
             btn.classList.toggle('disabled', !canInteractWithCurrentChat() && Boolean(currentChatId));
+            if(videoBtn) videoBtn.classList.toggle('disabled', !canInteractWithCurrentChat() && Boolean(currentChatId));
         }
 
         function updateChatAccessUI() {
@@ -1086,6 +1110,7 @@
             const input = document.getElementById('msg-input');
             const sendBtn = document.getElementById('send-btn');
             const attachBtn = document.querySelector('.attach-btn');
+            const videoBtn = document.getElementById('video-note-btn');
             const inputBar = document.querySelector('.chat-input-bar');
             const isRestricted = currentChatId && !canInteractWithCurrentChat();
             banner.className = 'chat-access-banner';
@@ -1104,10 +1129,12 @@
             inputBar.classList.toggle('disabled', Boolean(isRestricted));
             sendBtn.classList.toggle('disabled', Boolean(isRestricted));
             attachBtn.classList.toggle('disabled', Boolean(isRestricted));
+            videoBtn?.classList.toggle('disabled', Boolean(isRestricted));
         }
 
         function handleSendAction() {
             if(justFinishedHoldRecord) { justFinishedHoldRecord = false; return; }
+            if(justFinishedVideoHold) { justFinishedVideoHold = false; return; }
             if(!canInteractWithCurrentChat()) return;
             const txt = document.getElementById('msg-input').value.trim();
             if(txt || selectedMedia.length) sendMessage();
@@ -1186,6 +1213,105 @@
             activeVoiceRecord = null;
             recorder.stop();
             updateSendButtonState();
+        }
+
+        function setupVideoNoteHandlers() {
+            const btn = document.getElementById('video-note-btn');
+            const switchBtn = document.getElementById('video-note-switch');
+            if(!btn) return;
+            btn.addEventListener('mousedown', startHoldVideoNoteRecord);
+            btn.addEventListener('mouseup', stopHoldVideoNoteRecord);
+            btn.addEventListener('mouseleave', stopHoldVideoNoteRecord);
+            btn.addEventListener('touchstart', startHoldVideoNoteRecord, {passive:true});
+            btn.addEventListener('touchend', stopHoldVideoNoteRecord);
+            switchBtn?.addEventListener('click', (e) => { e.stopPropagation(); switchVideoNoteCamera(); });
+        }
+
+        async function startHoldVideoNoteRecord(e) {
+            if(!canInteractWithCurrentChat()) return;
+            if(document.getElementById('msg-input').value.trim() || selectedMedia.length || activeVideoNoteRecord) return;
+            if(e) e.preventDefault();
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentCameraFacing, width: { ideal: 720 }, height: { ideal: 960 } },
+                    audio: true
+                });
+                const chunks = [];
+                const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+                    ? 'video/webm;codecs=vp9,opus'
+                    : (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? 'video/webm;codecs=vp8,opus' : 'video/webm');
+                const rec = new MediaRecorder(stream, { mimeType });
+                rec.ondataavailable = ev => ev.data.size && chunks.push(ev.data);
+                rec.onstop = () => {
+                    const blob = new Blob(chunks, { type: rec.mimeType || 'video/webm' });
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                        sendPayload({
+                            text: '',
+                            type: 'media',
+                            media: [{ kind: 'video', data: ev.target.result, name: `video_note_${Date.now()}.webm`, isVideoNote: true }]
+                        });
+                    };
+                    reader.readAsDataURL(blob);
+                    stream.getTracks().forEach(t => t.stop());
+                };
+                videoNoteRecordStart = Date.now();
+                activeVideoNoteRecord = { rec, stream };
+                rec.start();
+                document.getElementById('video-note-preview').srcObject = stream;
+                document.getElementById('video-note-overlay').classList.add('active');
+                document.getElementById('video-note-btn').classList.add('recording');
+                videoNoteTimerInt = setInterval(() => {
+                    const ms = Date.now() - videoNoteRecordStart;
+                    const m = String(Math.floor(ms/60000)).padStart(2,'0');
+                    const s = String(Math.floor((ms%60000)/1000)).padStart(2,'0');
+                    const mm = String(ms%1000).padStart(3,'0');
+                    document.getElementById('video-note-time').innerText = `${m}:${s}.${mm}`;
+                }, 80);
+            } catch(e) {
+                console.log('video note disabled', e);
+                showToast('Видео-кружок недоступен на этом устройстве');
+            }
+        }
+
+        function stopHoldVideoNoteRecord() {
+            if(!activeVideoNoteRecord) return;
+            clearInterval(videoNoteTimerInt);
+            videoNoteTimerInt = null;
+            document.getElementById('video-note-overlay').classList.remove('active');
+            document.getElementById('video-note-btn').classList.remove('recording');
+            const preview = document.getElementById('video-note-preview');
+            preview.srcObject = null;
+            const recorder = activeVideoNoteRecord.rec;
+            activeVideoNoteRecord = null;
+            recorder.stop();
+            justFinishedVideoHold = true;
+            updateSendButtonState();
+        }
+
+        async function switchVideoNoteCamera() {
+            if(!activeVideoNoteRecord) return;
+            currentCameraFacing = currentCameraFacing === 'user' ? 'environment' : 'user';
+            try {
+                const replacement = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentCameraFacing, width: { ideal: 720 }, height: { ideal: 960 } },
+                    audio: true
+                });
+                const nextVideoTrack = replacement.getVideoTracks()[0];
+                const nextAudioTrack = replacement.getAudioTracks()[0];
+                const oldStream = activeVideoNoteRecord.stream;
+                const recorderStream = activeVideoNoteRecord.rec.stream;
+                const oldTracks = recorderStream.getTracks();
+                oldTracks.forEach(t => recorderStream.removeTrack(t));
+                if(nextVideoTrack) recorderStream.addTrack(nextVideoTrack);
+                if(nextAudioTrack) recorderStream.addTrack(nextAudioTrack);
+                oldStream?.getTracks().forEach(t => t.stop());
+                activeVideoNoteRecord.stream = replacement;
+                document.getElementById('video-note-preview').srcObject = replacement;
+            } catch(e) {
+                console.log('switch video-note camera failed', e);
+                showToast('Не удалось перевернуть камеру');
+            }
         }
 
         function handleMediaPick(inp) {
@@ -1521,15 +1647,21 @@
             const blockRef = db.ref(`blocks/${myId}/${targetId}`);
             blockRef.once('value', snap => {
                 const isBlocked = snap.exists();
-                if(isBlocked) {
-                    blockRef.remove();
-                    db.ref(`users/${myId}/chats/${targetId}`).update({ blockedByMe: false });
-                    showToast('Пользователь разблокирован');
-                } else {
-                    blockRef.set({ createdAt: firebase.database.ServerValue.TIMESTAMP });
-                    db.ref(`users/${myId}/chats/${targetId}`).update({ blockedByMe: true });
-                    showToast('Пользователь заблокирован');
-                }
+                const nextBlocked = !isBlocked;
+                const action = nextBlocked
+                    ? blockRef.set({ createdAt: firebase.database.ServerValue.TIMESTAMP })
+                    : blockRef.remove();
+                Promise.resolve(action).then(() => {
+                    return db.ref(`users/${myId}/chats/${targetId}`).update({ blockedByMe: nextBlocked });
+                }).then(() => {
+                    chatMetaMap[targetId] = { ...(chatMetaMap[targetId] || {}), blockedByMe: nextBlocked };
+                    if(currentChatId === targetId) {
+                        currentChatAccess.blockedByMe = nextBlocked;
+                        updateChatAccessUI();
+                    }
+                    showToast(nextBlocked ? 'Пользователь заблокирован' : 'Пользователь разблокирован');
+                    renderChats();
+                }).catch(() => showToast('Ошибка блокировки, попробуйте снова'));
             });
             hideAllMenus();
         }
@@ -1891,6 +2023,7 @@
 
         function bindMessageHoldMenu(div, key, msg) {
             let holdTimer = null;
+            let lastTapTs = 0;
             const openMenu = (x, y) => {
                 selectedMsgId = key;
                 const menu = document.getElementById('msg-menu');
@@ -1906,9 +2039,19 @@
             div.onmousedown = e => { e.stopPropagation(); holdTimer = setTimeout(() => openMenu(e.clientX, e.clientY), 380); };
             div.onmouseup = () => clearTimeout(holdTimer);
             div.onmouseleave = () => clearTimeout(holdTimer);
+            div.ondblclick = e => {
+                e.stopPropagation();
+                toggleMessageReaction(key, '❤️');
+            };
             div.ontouchstart = e => {
                 const t = e.touches[0];
                 holdTimer = setTimeout(() => openMenu(t.clientX, t.clientY), 420);
+                const now = Date.now();
+                if(now - lastTapTs < 280) {
+                    clearTimeout(holdTimer);
+                    toggleMessageReaction(key, '❤️');
+                }
+                lastTapTs = now;
             };
             div.ontouchend = () => clearTimeout(holdTimer);
         }
