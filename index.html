@@ -155,6 +155,7 @@
         .media-preview-bar { display: none; align-items: center; gap: 8px; padding: 8px 12px; margin: 0 10px 6px; border-radius: 14px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); overflow-x: auto; }
         .media-preview-card { position: relative; width: 48px; height: 48px; flex: 0 0 auto; animation: msgPop 0.25s ease; }
         .media-preview-item { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.25); display:block; }
+        .media-preview-file { width: 48px; height: 48px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.35); display:flex; align-items:center; justify-content:center; font-size:18px; background: rgba(255,255,255,0.08); }
         .media-remove-btn { position:absolute; top:-6px; right:-6px; width:20px; height:20px; border:none; border-radius:50%; background:#ff4d6d; color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,0.35); }
         .media-preview-meta { font-size: 11px; opacity: 0.8; white-space: nowrap; }
         .voice-recording { display:none; font-size: 12px; color: #ff7b7b; font-weight: 700; align-items: center; gap: 6px; }
@@ -175,6 +176,10 @@
         .msg-reactions { display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
         .reaction-pill { padding:2px 6px; border-radius:10px; background: rgba(255,255,255,0.13); font-size: 11px; }
         .reaction-pill.own { outline: 1px solid var(--primary); background: rgba(217,70,239,0.25); }
+        .msg-file-list { display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
+        .msg-file-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-radius:10px; background: rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.12); }
+        .msg-file-name { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .msg-file-download { font-size:12px; color:#9dd1ff; text-decoration:none; }
 
         /* MODALS */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 500; display: none; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
@@ -211,6 +216,8 @@
 
         /* CONTEXT MENUS */
         .context-menu { position: fixed; display: none; background: rgba(20,20,30,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; z-index: 400; box-shadow: 0 10px 40px rgba(0,0,0,0.6); min-width: 180px; overflow: hidden; transform-origin: top left; }
+        .context-menu.show-anim { animation: menuPop .22s ease; }
+        @keyframes menuPop { from { opacity:0; transform: scale(0.92) translateY(8px); } to { opacity:1; transform: scale(1) translateY(0); } }
         .ctx-item { padding: 14px 20px; cursor: pointer; display: flex; gap: 12px; align-items: center; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .ctx-delete { color: #ff4444; }
 
@@ -479,7 +486,7 @@
             <div id="media-preview-bar" class="media-preview-bar"></div>
             <div id="chat-access-banner" class="chat-access-banner"></div>
             <div class="chat-input-bar glass-panel">
-                <input type="file" id="media-input" hidden accept="image/*,video/*" multiple onchange="handleMediaPick(this)">
+                <input type="file" id="media-input" hidden accept="image/*,video/*,.pdf,.doc,.docx,.txt,.zip,.rar,.7z,.apk" multiple onchange="handleMediaPick(this)">
                 <div class="attach-btn" onclick="document.getElementById('media-input').click()"><i class="fas fa-plus"></i></div>
                 <input type="text" id="msg-input" style="margin: 0; background: rgba(255,255,255,0.08); border: none;" placeholder="Message..." autocomplete="off">
                 <div id="voice-recording" class="voice-recording"><span class="voice-dot"></span><span id="voice-recording-time">00:00.000</span></div>
@@ -570,8 +577,11 @@
       <div class="modal-content glass-panel" style="max-width:420px;text-align:left;">
         <span class="close-modal" onclick="document.getElementById('group-info-modal').style.display='none'">&times;</span>
         <h3 style="text-align:center;">Управление группой</h3>
+        <div id="group-avatar-preview" class="profile-pic-large" style="width:86px;height:86px;font-size:30px;margin:0 auto 12px;cursor:pointer;" onclick="document.getElementById('group-avatar-input').click()"><i class="fas fa-users"></i></div>
+        <input type="file" id="group-avatar-input" hidden accept="image/*" onchange="uploadGroupAvatar(this)">
         <input id="group-title-input" placeholder="Название">
         <textarea id="group-desc-input" rows="2" placeholder="Описание"></textarea>
+        <div id="group-link-box" style="display:none;font-size:12px;opacity:.85;margin-top:6px;"></div>
         <div style="font-size:12px;opacity:.8;margin:6px 0;" id="group-members-count">0 участников</div>
         <div id="group-members-list" style="max-height:180px; overflow:auto; margin:10px 0; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:6px;"></div>
         <button class="btn" onclick="saveGroupInfo()">Сохранить</button>
@@ -598,6 +608,9 @@
         </div>
         <div class="ctx-item" onclick="toggleArchiveSelectedChat()">
             <i class="fas fa-box-archive"></i> <span id="chat-archive-label">В архив</span>
+        </div>
+        <div class="ctx-item" onclick="toggleMuteSelectedChat()">
+            <i class="fas fa-bell-slash"></i> <span id="chat-mute-label">Выключить уведомления</span>
         </div>
         <div class="ctx-item ctx-delete" onclick="showDeleteChatOptions()">
             <i class="fas fa-trash"></i> <span data-key="delete">Delete Chat</span>
@@ -642,6 +655,9 @@
             <span class="close-modal" onclick="document.getElementById('group-create-modal').style.display='none'">&times;</span>
             <h3 data-key="create_group">Create Group</h3>
             <input type="text" id="group-name-input" placeholder="Group Name">
+            <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:6px 0 8px;">
+                <input type="checkbox" id="group-is-channel"> <span>Private channel (admins post only)</span>
+            </label>
             <p style="text-align:left; font-size:13px; margin-top:15px; opacity:0.7;" data-key="select_members">Select Members:</p>
             <div id="group-user-list" style="max-height:150px; overflow-y:auto; text-align:left; border:1px solid rgba(255,255,255,0.1); padding:5px; border-radius:10px; margin:10px 0;"></div>
             <button class="btn" onclick="createGroup()" data-key="create">Create</button>
@@ -730,7 +746,9 @@
                 give_gift: "Give a Gift 🎁", give_happiness: "Give sweet happiness", are_you_sure: "Are you sure?", yes_give: "Yes, Give!", cancel: "Cancel",
                 gift_love: "Give sweet love", gift_yes: "Give YES", gift_toy: "Give sweet toy", pinned_msg: "Pinned Message", pinned_msgs_title: "Pinned Messages", delete_msg_title: "Delete Message?", delete_chat_title: "Delete Chat?",
                 online: "online", last_seen: "Last seen", typing: "typing...", just_now: "just now", at: "at", select_members: "Select Members:",
-                peer_muted: "Peer turned off mic", call_ended: "Call ended", duration: "Duration", call_back: "Call Back"
+                peer_muted: "Peer turned off mic", call_ended: "Call ended", duration: "Duration", call_back: "Call Back",
+                muted: "Notifications off", unmuted: "Notifications on", mute_chat: "Mute chat", unmute_chat: "Unmute chat",
+                group_name: "Group name", group_desc: "Description", save_done: "Saved", channel_readonly: "Only admins can post in this channel", invite_link: "Invite link"
             },
             ru: {
                 slogan: "Твой тот самый сладкий мессенджер!", login_btn: "Полететь 🚀", chats: "Чаты", settings: "Настройки", profile: "Профиль", theme: "Тема", logout: "Выйти", save: "Сохранить",
@@ -744,7 +762,9 @@
                 give_gift: "Подарить Подарок 🎁", give_happiness: "Подарите сладкое счастье", are_you_sure: "Вы уверены?", yes_give: "Да, Подарить!", cancel: "Отмена",
                 gift_love: "Подарить сладкую любовь", gift_yes: "Подарить ДА", gift_toy: "Подарить сладкую игрушку", pinned_msg: "Закрепленное сообщение", pinned_msgs_title: "Закрепленные сообщения", delete_msg_title: "Удалить сообщение?", delete_chat_title: "Удалить чат?",
                 online: "в сети", last_seen: "Был(а)", typing: "печатает...", just_now: "только что", at: "в", select_members: "Выберите участников:",
-                peer_muted: "Собеседник выключил микро", call_ended: "Звонок завершен", duration: "Длительность", call_back: "Перезвонить"
+                peer_muted: "Собеседник выключил микро", call_ended: "Звонок завершен", duration: "Длительность", call_back: "Перезвонить",
+                muted: "Уведомления выключены", unmuted: "Уведомления включены", mute_chat: "Выключить уведомления", unmute_chat: "Включить уведомления",
+                group_name: "Название", group_desc: "Описание", save_done: "Сохранено", channel_readonly: "В канале писать может только админ", invite_link: "Ссылка-приглашение"
             }
         };
 
@@ -827,12 +847,16 @@
                 document.getElementById('search-input').placeholder = "Введите буквы...";
                 document.getElementById('recovery-input').placeholder = "Ник друга";
                 document.getElementById('group-name-input').placeholder = "Название группы";
+                document.getElementById('group-title-input').placeholder = langData[lang].group_name;
+                document.getElementById('group-desc-input').placeholder = langData[lang].group_desc;
             } else {
                 document.getElementById('nick-input').placeholder = "Nickname (English only)";
                 document.getElementById('msg-input').placeholder = "Message...";
                 document.getElementById('search-input').placeholder = "Type letters...";
                 document.getElementById('recovery-input').placeholder = "Friend's Nickname";
                 document.getElementById('group-name-input').placeholder = "Group Name";
+                document.getElementById('group-title-input').placeholder = langData[lang].group_name;
+                document.getElementById('group-desc-input').placeholder = langData[lang].group_desc;
             }
             updateChatAccessUI();
         }
@@ -1077,7 +1101,7 @@
                 inp.value = '';
                 return;
             }
-            const files = Array.from(inp.files || []).slice(0, 3);
+            const files = Array.from(inp.files || []).slice(0, 5);
             selectedMedia = [];
             Promise.all(files.map((f, idx) => compressMedia(f, idx))).then(items => {
                 selectedMedia = items.filter(Boolean);
@@ -1088,9 +1112,15 @@
 
         function compressMedia(file, idx) {
             return new Promise(resolve => {
-                if(file.type.startsWith('video/')) {
+                if((file.type || '').startsWith('video/')) {
                     const r = new FileReader();
                     r.onload = e => resolve({ kind:'video', data: e.target.result, name:file.name || `video_${idx+1}.mp4` });
+                    r.readAsDataURL(file);
+                    return;
+                }
+                if(!(file.type || '').startsWith('image/')) {
+                    const r = new FileReader();
+                    r.onload = e => resolve({ kind:'file', data: e.target.result, name:file.name || `file_${idx+1}`, mime:file.type || 'application/octet-stream', size:file.size || 0 });
                     r.readAsDataURL(file);
                     return;
                 }
@@ -1115,14 +1145,21 @@
             const wrap = document.getElementById('media-preview-bar');
             if(!selectedMedia.length) { wrap.style.display='none'; wrap.innerHTML=''; return; }
             wrap.style.display = 'flex';
-            wrap.innerHTML = `<div class="media-preview-meta">${selectedMedia.length} file(s) added</div>`;
+            wrap.innerHTML = `<div class="media-preview-meta">${selectedMedia.length} item(s) added</div>`;
             selectedMedia.forEach((m, idx) => {
                 const card = document.createElement('div');
                 card.className = 'media-preview-card';
-                const node = m.kind === 'image' ? document.createElement('img') : document.createElement('video');
-                node.className = 'media-preview-item';
-                node.src = m.data;
-                if(m.kind === 'video') { node.muted = true; node.playsInline = true; }
+                let node;
+                if(m.kind === 'file') {
+                    node = document.createElement('div');
+                    node.className = 'media-preview-file';
+                    node.innerHTML = '<i class="fas fa-file"></i>';
+                } else {
+                    node = m.kind === 'image' ? document.createElement('img') : document.createElement('video');
+                    node.className = 'media-preview-item';
+                    node.src = m.data;
+                    if(m.kind === 'video') { node.muted = true; node.playsInline = true; }
+                }
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'media-remove-btn';
                 removeBtn.innerHTML = '<i class="fas fa-times"></i>';
@@ -1295,8 +1332,9 @@
             let timer;
             el.ontouchstart = (e) => { timer = setTimeout(() => { showChatContext(e.touches[0], c.id); }, 600); }
             el.ontouchend = () => clearTimeout(timer);
-            el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div><div class="unread-badge" style="display:${(c.unread||0)>0?'inline-flex':'none'}">${c.unread||''}</div>`;
-            if((c.unread||0)>0) el.classList.add('unread-glow');
+            const showUnread = (c.unread || 0) > 0 && !c.muted;
+            el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div><div class="unread-badge" style="display:${showUnread?'inline-flex':'none'}">${showUnread ? (c.unread||'') : ''}</div>`;
+            if(showUnread) el.classList.add('unread-glow');
             container.appendChild(el);
             if(isFavoritesChat(c.id)) {
                 const av = el.querySelector('.avatar');
@@ -1348,9 +1386,11 @@
              document.getElementById('chat-block-action').style.display = isDirectChat ? 'flex' : 'none';
              document.getElementById('chat-block-label').innerText = chat.blockedByMe ? 'Разблокировать' : 'Заблокировать';
              document.getElementById('chat-archive-label').innerText = chat.archived ? 'Достать из архивов' : 'В архив';
+             document.getElementById('chat-mute-label').innerText = chat.muted ? langData[currentLang].unmute_chat : langData[currentLang].mute_chat;
              menu.style.display = 'flex';
-             menu.style.top = e.clientY+'px';
-             menu.style.left = e.clientX+'px';
+             menu.classList.add('show-anim');
+             menu.style.top = Math.min(window.innerHeight - 260, Math.max(90, e.clientY)) + 'px';
+             menu.style.left = (window.innerWidth/2 - 110) + 'px';
         }
 
         function togglePinChat() {
@@ -1368,6 +1408,15 @@
                 muted: nextArchived
             });
             showToast(nextArchived ? 'Чат отправлен в архив' : 'Чат возвращён из архива');
+            hideAllMenus();
+        }
+
+        function toggleMuteSelectedChat() {
+            if(!selectedIdForMenu) return;
+            const chat = chatMetaMap[selectedIdForMenu] || {};
+            const nextMuted = !chat.muted;
+            db.ref(`users/${myId}/chats/${selectedIdForMenu}`).update({ muted: nextMuted });
+            showToast(nextMuted ? langData[currentLang].muted : langData[currentLang].unmuted);
             hideAllMenus();
         }
 
@@ -1451,7 +1500,22 @@
             const members = { [myId]: true };
             checks.forEach(c => members[c.value] = true);
 
-            db.ref(`groups/${gid}`).set({ name: name, members: members, admin: myId, description: '', onlineCount: 1, avatar: '' });
+            const isChannel = document.getElementById('group-is-channel')?.checked;
+            const inviteToken = Math.random().toString(36).slice(2, 10);
+            const fixedPrefix = isChannel ? (currentLang === 'ru' ? 'Это моя ссылка на группу: ' : 'This is my group link: ') : '';
+            db.ref(`groups/${gid}`).set({
+                name: name,
+                members: members,
+                admin: myId,
+                description: '',
+                onlineCount: 1,
+                avatar: '',
+                isChannel: !!isChannel,
+                isPrivate: !!isChannel,
+                inviteToken,
+                fixedPrefix,
+                inviteLink: `https://sladkiy.app/join/${gid}?token=${inviteToken}`
+            });
 
             for(let uid in members) {
                 db.ref(`users/${uid}/chats/${gid}`).update({
@@ -1512,8 +1576,8 @@
                     document.getElementById('room-name').innerText = u.name;
                     const groupAvatar = document.getElementById('room-header-avatar');
                     groupAvatar.style.background = '';
-                    groupAvatar.style.backgroundImage = '';
-                    groupAvatar.innerHTML = '<i class="fas fa-users"></i>';
+                    groupAvatar.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
+                    groupAvatar.innerHTML = u.avatar ? '' : '<i class="fas fa-users"></i>';
                     currentGroupData = { id, ...u };
                     document.getElementById('room-header-avatar').parentElement.onclick = () => openGroupInfo();
                 };
@@ -1678,17 +1742,7 @@
                 return;
             }
 
-            div.onclick = (e) => {
-                e.stopPropagation();
-                selectedMsgId = key;
-                const menu = document.getElementById('msg-menu');
-                menu.setAttribute('data-text', msg.type==='gift' ? 'Gift' : msg.text);
-                menu.setAttribute('data-nick', msg.fromNick);
-                menu.setAttribute('data-gift-type', msg.giftType || '');
-                menu.style.top = e.clientY + 'px';
-                menu.style.left = (window.innerWidth/2 - 90) + 'px';
-                menu.style.display = 'block';
-            };
+            bindMessageHoldMenu(div, key, msg);
 
             let content = '';
             if(msg.replyTo) content += `<div class="msg-reply-content"><div class="msg-reply-name">${msg.replyTo.nick}</div><div class="msg-reply-text">${msg.replyTo.text}</div></div>`;
@@ -1701,6 +1755,10 @@
                 content += `<div class="msg-media-grid cols-${Math.min(media.length,3)}">`;
                 media.forEach(m => {
                     if(m.kind === 'video') content += `<video controls playsinline src="${m.data}" onclick="event.stopPropagation();openMediaViewer('${m.data}','video')"></video>`;
+                    else if(m.kind === 'file') {
+                        const safeName = (m.name || 'file').replace(/</g, '&lt;');
+                        content += `<div class="msg-file-list"><div class="msg-file-item"><span class="msg-file-name"><i class="fas fa-file"></i> ${safeName}</span><a class="msg-file-download" href="${m.data}" download="${safeName}" onclick="event.stopPropagation()">Download</a></div></div>`;
+                    }
                     else content += `<img src="${m.data}" alt="media" onclick="event.stopPropagation();openMediaViewer('${m.data}','image')">`;
                 });
                 content += `</div>`;
@@ -1732,12 +1790,35 @@
             if(shouldStickToBottom) area.scrollTop = area.scrollHeight;
         }
 
+        function bindMessageHoldMenu(div, key, msg) {
+            let holdTimer = null;
+            const openMenu = (x, y) => {
+                selectedMsgId = key;
+                const menu = document.getElementById('msg-menu');
+                menu.setAttribute('data-text', msg.type==='gift' ? 'Gift' : msg.text);
+                menu.setAttribute('data-nick', msg.fromNick);
+                menu.setAttribute('data-gift-type', msg.giftType || '');
+                menu.style.top = Math.min(window.innerHeight - 280, Math.max(90, y)) + 'px';
+                menu.style.left = (window.innerWidth/2 - 90) + 'px';
+                menu.style.display = 'block';
+                menu.classList.add('show-anim');
+            };
+            div.onmousedown = e => { e.stopPropagation(); holdTimer = setTimeout(() => openMenu(e.clientX, e.clientY), 380); };
+            div.onmouseup = () => clearTimeout(holdTimer);
+            div.onmouseleave = () => clearTimeout(holdTimer);
+            div.ontouchstart = e => {
+                const t = e.touches[0];
+                holdTimer = setTimeout(() => openMenu(t.clientX, t.clientY), 420);
+            };
+            div.ontouchend = () => clearTimeout(holdTimer);
+        }
+
         function sendMessage() {
             const txt = document.getElementById('msg-input').value.trim();
             if(!currentChatId) return;
             if(!canInteractWithCurrentChat()) return;
             if(selectedMedia.length) {
-                sendPayload({ text: txt, type: 'media', media: selectedMedia.slice(0,3) });
+                sendPayload({ text: txt, type: 'media', media: selectedMedia.slice(0,5) });
                 selectedMedia = [];
                 renderMediaPreview();
             } else if(txt) {
@@ -1756,6 +1837,10 @@
             const isGroup = currentChatId.startsWith('group_');
             const isFavorites = isFavoritesChat(currentChatId);
             const cid = isFavorites ? getFavoritesMessagePath() : (isGroup ? currentChatId : [myId, currentChatId].sort().join('_'));
+            if(isGroup && currentGroupData?.isChannel && currentGroupData?.admin !== myId && data.type !== 'call_log') {
+                showToast(langData[currentLang].channel_readonly);
+                return null;
+            }
             const payload = { from: myId, fromNick: myNick, text: data.text || '', type: data.type || 'text', time: firebase.database.ServerValue.TIMESTAMP, status: 'sent' };
             if(data.type === 'gift') { payload.giftIcon = data.giftIcon; payload.giftLabel = data.giftLabel; payload.giftType = data.giftType; }
             if(data.type === 'media') payload.media = data.media || [];
@@ -1826,6 +1911,7 @@
 
         function openGroupInfo() {
             if(!currentChatId || !currentChatId.startsWith('group_')) return;
+            history.pushState({view: 'modal'}, '', '');
             db.ref(`groups/${currentChatId}`).once('value', s => {
                 const g = s.val();
                 if(!g) return;
@@ -1833,12 +1919,34 @@
                 document.getElementById('group-title-input').value = g.name || '';
                 document.getElementById('group-desc-input').value = g.description || '';
                 document.getElementById('group-members-count').innerText = `${Object.keys(g.members||{}).length} участников`;
+                const av = document.getElementById('group-avatar-preview');
+                av.style.backgroundImage = g.avatar ? `url(${g.avatar})` : '';
+                av.innerHTML = g.avatar ? '' : '<i class="fas fa-users"></i>';
+                const linkBox = document.getElementById('group-link-box');
+                if(g.isChannel && g.isPrivate && g.inviteLink) {
+                    linkBox.style.display = 'block';
+                    linkBox.innerHTML = `${langData[currentLang].invite_link}: <a href="${g.inviteLink}" target="_blank">${g.inviteLink}</a>`;
+                } else linkBox.style.display = 'none';
                 const canEdit = g.admin === myId;
                 document.getElementById('group-title-input').disabled = !canEdit;
                 document.getElementById('group-desc-input').disabled = !canEdit;
                 renderGroupMembers(g);
                 document.getElementById('group-info-modal').style.display = 'flex';
             });
+        }
+
+        function uploadGroupAvatar(inp) {
+            if(!currentGroupData || currentGroupData.admin !== myId) return;
+            const f = inp.files?.[0];
+            if(!f) return;
+            const r = new FileReader();
+            r.onload = e => {
+                db.ref(`groups/${currentGroupData.id}`).update({ avatar: e.target.result });
+                const av = document.getElementById('group-avatar-preview');
+                av.style.backgroundImage = `url(${e.target.result})`;
+                av.innerHTML = '';
+            };
+            r.readAsDataURL(f);
         }
 
         function renderGroupMembers(group) {
@@ -1878,7 +1986,9 @@
             const name = document.getElementById('group-title-input').value.trim();
             const description = document.getElementById('group-desc-input').value.trim();
             if(!name) return alert('Введите название группы');
-            db.ref(`groups/${currentGroupData.id}`).update({ name, description });
+            const currentPrefix = currentGroupData.fixedPrefix || '';
+            const cleanDesc = currentGroupData.isChannel ? `${currentPrefix}${description.replace(currentPrefix, '')}` : description;
+            db.ref(`groups/${currentGroupData.id}`).update({ name, description: cleanDesc });
             sendPayload({ type: 'text', text: '✏️ Создатель изменил данные группы' });
             document.getElementById('group-info-modal').style.display = 'none';
         }
@@ -2306,7 +2416,15 @@
         }
 
         function toggleFab(e) { e.stopPropagation(); document.getElementById('fab-menu').classList.toggle('active'); }
-        function hideAllMenus() { document.getElementById('chat-menu').style.display='none'; document.getElementById('msg-menu').style.display='none'; document.getElementById('fab-menu').classList.remove('active'); }
+        function hideAllMenus() {
+            const chatMenu = document.getElementById('chat-menu');
+            const msgMenu = document.getElementById('msg-menu');
+            chatMenu.style.display='none';
+            msgMenu.style.display='none';
+            chatMenu.classList.remove('show-anim');
+            msgMenu.classList.remove('show-anim');
+            document.getElementById('fab-menu').classList.remove('active');
+        }
 
         // FIX: Add history handling for Tab Switching
         function switchTab(t, fromBack = false) {
@@ -2331,7 +2449,7 @@
         }
 
         function logout() { localStorage.removeItem('sladkiy_session_user'); localStorage.removeItem('sladkiy_trusted_' + myId); location.reload(); }
-        function saveProfile() { db.ref(`users/${myId}`).update({bio:document.getElementById('edit-bio').value}); alert("Saved"); }
+        function saveProfile() { db.ref(`users/${myId}`).update({bio:document.getElementById('edit-bio').value}); alert(langData[currentLang].save_done); }
         function uploadAvatar(inp) { const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload=e=>{ myAvatar=e.target.result; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:myAvatar}); }; r.readAsDataURL(f); }
         function removeAvatar() { myAvatar=''; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:''}); }
         function updateProfileUI() { const el = document.getElementById('my-profile-pic'); el.style.backgroundImage = myAvatar?`url(${myAvatar})`:''; el.innerText = myAvatar ? '' : (myNick||'U').replace('$','')[0].toUpperCase(); document.getElementById('profile-nick-display').innerText = myNick; }
