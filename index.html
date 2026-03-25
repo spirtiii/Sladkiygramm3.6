@@ -314,9 +314,19 @@
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
 
         /* GROUP LIST ITEMS */
-        .user-check-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-        .user-check-item:hover { background: rgba(255,255,255,0.05); }
-        .check-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--primary); margin-right: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .user-check-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; cursor: pointer; margin-bottom: 8px; background: rgba(255,255,255,0.03); transition: 0.2s ease; min-width: 0; }
+        .user-check-item:hover { background: rgba(255,255,255,0.07); transform: translateY(-1px); }
+        .user-check-item .member-main { display:flex; flex-direction:column; min-width:0; flex:1; }
+        .member-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .member-subtitle { font-size: 11px; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .check-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--primary); margin-right: 2px; display: flex; align-items: center; justify-content: center; font-size: 12px; overflow: hidden; background-size: cover; background-position: center; }
+        .selection-box { width: 22px; height: 22px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s; background: rgba(0,0,0,0.15); }
+        .selection-box i { font-size: 11px; opacity: 0; transform: scale(0.7); transition: 0.2s; }
+        .user-check-item.selected { border-color: var(--primary); box-shadow: 0 0 0 1px rgba(217,70,239,0.25); background: rgba(217,70,239,0.12); }
+        .user-check-item.selected .selection-box { background: var(--primary); border-color: var(--primary); }
+        .user-check-item.selected .selection-box i { opacity: 1; transform: scale(1); }
+        .channel-toggle-card { display:flex; align-items:center; justify-content:space-between; padding: 10px 12px; border-radius: 12px; border:1px solid rgba(255,255,255,0.14); margin-top:8px; margin-bottom:8px; cursor:pointer; background: rgba(255,255,255,0.04); }
+        .channel-toggle-card.active { border-color: var(--primary); background: rgba(217,70,239,0.13); }
     </style>
 </head>
 <body class="theme-space" onclick="hideAllMenus()">
@@ -338,6 +348,7 @@
             </div>
             <p style="color: var(--text-sec); margin-bottom: 30px;" data-key="slogan">Your that very sweet messenger!</p>
             <input type="text" id="nick-input" placeholder="Nickname (English only)">
+            <input type="text" id="bot-field" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
             <button class="btn" onclick="checkAuthFlow()" data-key="login_btn">Fly 🚀</button>
         </div>
     </div>
@@ -613,12 +624,12 @@
     <div id="group-info-modal" class="modal">
       <div class="modal-content glass-panel" style="max-width:420px;text-align:left;">
         <span class="close-modal" onclick="document.getElementById('group-info-modal').style.display='none'">&times;</span>
-        <h3 style="text-align:center;">Управление группой</h3>
+        <h3 style="text-align:center;" data-key="group_manage">Управление группой</h3>
         <div id="group-avatar-preview" class="profile-pic-large" style="width:86px;height:86px;font-size:30px;margin:0 auto 12px;cursor:pointer;" onclick="document.getElementById('group-avatar-input').click()"><i class="fas fa-users"></i></div>
         <input type="file" id="group-avatar-input" hidden accept="image/*" onchange="uploadGroupAvatar(this)">
         <input id="group-title-input" placeholder="Название">
         <textarea id="group-desc-input" rows="2" placeholder="Описание"></textarea>
-        <button id="group-add-member-btn" class="glass-cta-btn" onclick="openGroupAddMembersModal()" style="display:none;"><i class="fas fa-user-plus"></i> Добавить пользователя</button>
+        <button id="group-add-member-btn" class="glass-cta-btn" onclick="openGroupAddMembersModal()" style="display:none;"><i class="fas fa-user-plus"></i> <span data-key="add_user">Добавить пользователя</span></button>
         <div style="font-size:12px;opacity:.8;margin:6px 0;" id="group-members-count">0 участников</div>
         <div id="group-members-list" style="max-height:180px; overflow:auto; margin:10px 0; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:6px;"></div>
         <button class="btn" onclick="saveGroupInfo()">Сохранить</button>
@@ -627,7 +638,7 @@
     <div id="group-add-members-modal" class="modal">
       <div class="modal-content glass-panel" style="max-width:430px;text-align:left;">
         <span class="close-modal" onclick="document.getElementById('group-add-members-modal').style.display='none'">&times;</span>
-        <h3 style="text-align:center;margin-bottom:10px;">Добавить в группу</h3>
+        <h3 style="text-align:center;margin-bottom:10px;" data-key="add_to_group">Добавить в группу</h3>
         <div id="group-add-members-list" style="max-height:300px;overflow:auto;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:6px;"></div>
       </div>
     </div>
@@ -702,8 +713,13 @@
             <span class="close-modal" onclick="document.getElementById('group-create-modal').style.display='none'">&times;</span>
             <h3 data-key="create_group">Create Group</h3>
             <input type="text" id="group-name-input" placeholder="Group Name">
-            <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:6px 0 8px;">
-                <input type="checkbox" id="group-is-channel"> <span data-key="create_channel">Create channel</span>
+            <label class="channel-toggle-card" id="group-channel-toggle">
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+                    <input type="checkbox" id="group-is-channel" hidden>
+                    <i class="fas fa-bullhorn"></i>
+                    <span data-key="create_channel">Create channel</span>
+                </div>
+                <div class="selection-box"><i class="fas fa-check"></i></div>
             </label>
             <p style="text-align:left; font-size:13px; margin-top:15px; opacity:0.7;" data-key="select_members">Select Members:</p>
             <div id="group-user-list" style="max-height:150px; overflow-y:auto; text-align:left; border:1px solid rgba(255,255,255,0.1); padding:5px; border-radius:10px; margin:10px 0;"></div>
@@ -822,7 +838,10 @@
                 create_channel: "Create channel", day_theme: "Day Theme", night_theme: "Night Theme", join_title: "Join by link", join_btn: "Join",
                 join_need_auth: "Sign in first to join this chat", join_confirm: "Do you really want to join", channel_type: "Channel", group_type: "Group",
                 invalid_link: "Invalid invite link", join_success: "You joined successfully", join_denied: "Invite link is invalid",
-                notes_title: "Favorites", notes_desc: "Personal notes", members_online: "online", only_you_online: "Only you online"
+                notes_title: "Favorites", notes_desc: "Personal notes", members_online: "online", only_you_online: "Only you online",
+                group_manage: "Group Management", add_user: "Add user", add_to_group: "Add to group",
+                add_btn: "Add", no_users_available: "No available users", made_admin: "Make admin", was_online: "was online",
+                auth_rate_limited: "Too many attempts. Please wait a bit."
             },
             ru: {
                 slogan: "Твой тот самый сладкий мессенджер!", login_btn: "Полететь 🚀", chats: "Чаты", settings: "Настройки", profile: "Профиль", theme: "Тема", logout: "Выйти", save: "Сохранить",
@@ -842,7 +861,10 @@
                 create_channel: "Создать канал", day_theme: "Дневная тема", night_theme: "Ночная тема", join_title: "Вступление по ссылке", join_btn: "Присоединиться",
                 join_need_auth: "Сначала зарегистрируйтесь, чтобы вступить", join_confirm: "Вы точно хотите присоединиться к", channel_type: "Канал", group_type: "Группа",
                 invalid_link: "Неверная ссылка приглашения", join_success: "Вы успешно вступили", join_denied: "Ссылка приглашения недействительна",
-                notes_title: "Избранное", notes_desc: "Личные заметки", members_online: "в сети", only_you_online: "Только вы в сети"
+                notes_title: "Избранное", notes_desc: "Личные заметки", members_online: "в сети", only_you_online: "Только вы в сети",
+                group_manage: "Управление группой", add_user: "Добавить пользователя", add_to_group: "Добавить в группу",
+                add_btn: "Добавить", no_users_available: "Нет доступных пользователей", made_admin: "Передать админа", was_online: "был(а) в сети",
+                auth_rate_limited: "Слишком много попыток. Подождите немного."
             }
         };
 
@@ -883,6 +905,12 @@
         let currentChatAccess = { blockedByMe: false, blockedMe: false };
         let pendingJoinData = null;
         let blockedWatcherBound = false;
+        const MESSAGE_CHAR_WINDOW = 1500;
+        const MESSAGE_CHAR_CHUNK = 900;
+        let chatMessageBuffer = [];
+        let visibleMessageStart = 0;
+        let visibleMessageEnd = 0;
+        const actionRateMap = {};
 
         window.onload = () => {
             try {
@@ -899,6 +927,12 @@
                 });
 
                 document.getElementById('msg-input').addEventListener('input', () => { handleTyping(); updateSendButtonState(); mediaDraftCaption = document.getElementById('msg-input').value; });
+                document.getElementById('group-channel-toggle')?.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const cb = document.getElementById('group-is-channel');
+                    cb.checked = !cb.checked;
+                    updateChannelToggleVisual(cb.checked);
+                });
                 setupVoiceHandlers();
                 setupVideoNoteHandlers();
                 registerServiceWorker();
@@ -945,6 +979,9 @@
                 document.getElementById('group-desc-input').placeholder = langData[lang].group_desc;
             }
             updateChatAccessUI();
+            const channelCb = document.getElementById('group-is-channel');
+            if(channelCb) updateChannelToggleVisual(channelCb.checked);
+            if(currentGroupData && document.getElementById('group-info-modal').style.display === 'flex') renderGroupMembers(currentGroupData);
         }
 
         function formatLastSeen(ts) {
@@ -1015,6 +1052,10 @@
             document.getElementById('media-input').value = '';
             selectedMedia = [];
             renderMediaPreview();
+            document.getElementById('messages-area').onscroll = null;
+            chatMessageBuffer = [];
+            visibleMessageStart = 0;
+            visibleMessageEnd = 0;
             currentChatAccess = { blockedByMe: false, blockedMe: false };
             updateChatAccessUI();
             updateSendButtonState();
@@ -1536,7 +1577,71 @@
             if(document.hidden || !document.getElementById('chat-room').classList.contains('active')) new Notification(title, { body });
         }
 
+        function isRateLimited(action, maxCount = 8, perMs = 10000) {
+            const now = Date.now();
+            const bucket = actionRateMap[action] || [];
+            const fresh = bucket.filter(ts => now - ts < perMs);
+            if(fresh.length >= maxCount) return true;
+            fresh.push(now);
+            actionRateMap[action] = fresh;
+            return false;
+        }
+
+        function updateChannelToggleVisual(isActive) {
+            const card = document.getElementById('group-channel-toggle');
+            if(card) card.classList.toggle('active', !!isActive);
+        }
+
+        function estimateMsgChars(msg) {
+            if(!msg) return 0;
+            const textLen = (msg.text || '').length;
+            if(msg.type === 'media') return textLen + ((msg.media || []).length * 90);
+            if(msg.type === 'voice') return textLen + 140;
+            if(msg.type === 'gift') return textLen + 50;
+            return textLen + 26;
+        }
+
+        function trimWindowByChars(endIdx, charLimit = MESSAGE_CHAR_WINDOW) {
+            let chars = 0;
+            let start = endIdx;
+            while(start > 0 && (chars < charLimit || (endIdx - start) < 25)) {
+                start -= 1;
+                chars += estimateMsgChars(chatMessageBuffer[start]?.msg);
+            }
+            return Math.max(0, start);
+        }
+
+        function rerenderVisibleMessages(keepBottom = true) {
+            const area = document.getElementById('messages-area');
+            const bubble = document.getElementById('typing-bubble');
+            if(!area || !bubble) return;
+            const wasNearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 120;
+            area.querySelectorAll('.msg').forEach(el => el.remove());
+            const isGroup = currentChatId?.startsWith('group_');
+            for(let i = visibleMessageStart; i < visibleMessageEnd; i++) {
+                const item = chatMessageBuffer[i];
+                if(!item) continue;
+                renderMsg(item.key, item.msg, isGroup, true, false);
+            }
+            checkEmptyChat();
+            if(keepBottom && wasNearBottom) area.scrollTop = area.scrollHeight;
+        }
+
+        function expandMessageWindowUp() {
+            if(visibleMessageStart <= 0) return;
+            let chars = 0;
+            let nextStart = visibleMessageStart;
+            while(nextStart > 0 && chars < MESSAGE_CHAR_CHUNK) {
+                nextStart -= 1;
+                chars += estimateMsgChars(chatMessageBuffer[nextStart]?.msg);
+            }
+            visibleMessageStart = nextStart;
+            rerenderVisibleMessages(false);
+        }
+
         function checkAuthFlow() {
+            if(isRateLimited('auth', 6, 60000)) { showToast(langData[currentLang].auth_rate_limited); return; }
+            if(document.getElementById('bot-field')?.value) return;
             let nick = document.getElementById('nick-input').value.trim();
             if (!/^[a-zA-Z0-9]+$/.test(nick)) return alert("English letters & numbers only!");
             myNick = '$' + nick;
@@ -1861,7 +1966,11 @@
             history.pushState({view: 'modal'}, '', '');
 
             document.getElementById('fab-menu').classList.remove('active');
+            document.getElementById('fab-main').classList.remove('rotate');
             document.getElementById('group-create-modal').style.display = 'flex';
+            const groupChannelCb = document.getElementById('group-is-channel');
+            if(groupChannelCb) groupChannelCb.checked = false;
+            updateChannelToggleVisual(false);
             const list = document.getElementById('group-user-list');
             list.innerHTML = '';
 
@@ -1873,8 +1982,19 @@
                         const u = snap.val();
                         const div = document.createElement('div');
                         div.className = 'user-check-item';
-                        div.onclick = () => { const cb = div.querySelector('input'); cb.checked = !cb.checked; };
-                        div.innerHTML = `<input type="checkbox" value="${uid}" onclick="event.stopPropagation()"><div class="check-avatar">${u.avatar?'':u.nick[0]}</div><span>${u.nick}</span>`;
+                        div.onclick = () => {
+                            const cb = div.querySelector('input');
+                            cb.checked = !cb.checked;
+                            div.classList.toggle('selected', cb.checked);
+                        };
+                        div.innerHTML = `
+                            <input type="checkbox" value="${uid}" hidden onclick="event.stopPropagation()">
+                            <div class="selection-box"><i class="fas fa-check"></i></div>
+                            <div class="check-avatar" style="${u.avatar ? `background-image:url(${u.avatar});` : ''}">${u.avatar?'':(u.nick?.[0] || 'U')}</div>
+                            <div class="member-main">
+                                <span class="member-title">${u.nick}</span>
+                            </div>
+                        `;
                         list.appendChild(div);
                     });
                 });
@@ -1882,6 +2002,7 @@
         }
 
         function createGroup() {
+            if(isRateLimited('create_group', 4, 30000)) { showToast(langData[currentLang].auth_rate_limited); return; }
             const name = document.getElementById('group-name-input').value;
             if(!name) return alert("Enter Group Name");
             const checks = document.querySelectorAll('#group-user-list input:checked');
@@ -2065,21 +2186,43 @@
 
             db.ref(`messages/${cid}`).off();
             const messagesRef = db.ref(`messages/${cid}`);
-            trackChatListener(messagesRef.limitToLast(50), 'child_added', s => {
+            chatMessageBuffer = [];
+            visibleMessageStart = 0;
+            visibleMessageEnd = 0;
+            area.onscroll = () => {
+                if(area.scrollTop < 80) expandMessageWindowUp();
+            };
+            trackChatListener(messagesRef.limitToLast(2000), 'child_added', s => {
                 const msg = s.val();
                 if(msg.deletedFor && msg.deletedFor[myId]) return;
-                renderMsg(s.key, msg, isGroup, false, true);
+                chatMessageBuffer.push({ key: s.key, msg });
+                visibleMessageEnd = chatMessageBuffer.length;
+                visibleMessageStart = trimWindowByChars(visibleMessageEnd, MESSAGE_CHAR_WINDOW);
+                rerenderVisibleMessages(true);
                 if(msg.from !== myId && msg.status !== 'read') {
                     db.ref(`messages/${cid}/${s.key}`).update({ status: 'read' });
                     if(msg.type === 'call_invite') showLocalNotification(msg.fromNick || 'Incoming call', 'is calling you', id);
                     else if(msg.type === 'text' || msg.type === 'media') showLocalNotification(msg.fromNick || 'New message', msg.text || 'Media message', id);
                 }
             });
-            trackChatListener(messagesRef, 'child_removed', s => { const el = document.getElementById(`msg-${s.key}`); if(el) el.remove(); checkEmptyChat(); });
+            trackChatListener(messagesRef, 'child_removed', s => {
+                const idx = chatMessageBuffer.findIndex(m => m.key === s.key);
+                if(idx !== -1) chatMessageBuffer.splice(idx, 1);
+                visibleMessageEnd = chatMessageBuffer.length;
+                visibleMessageStart = Math.min(visibleMessageStart, visibleMessageEnd);
+                rerenderVisibleMessages(false);
+            });
             trackChatListener(messagesRef, 'child_changed', s => {
                 const val = s.val();
-                if(val.deletedFor && val.deletedFor[myId]) { const el = document.getElementById(`msg-${s.key}`); if(el) el.remove(); }
-                else renderMsg(s.key, val, isGroup, true, false);
+                const idx = chatMessageBuffer.findIndex(m => m.key === s.key);
+                if(val.deletedFor && val.deletedFor[myId]) {
+                    if(idx !== -1) chatMessageBuffer.splice(idx, 1);
+                } else if(idx !== -1) {
+                    chatMessageBuffer[idx].msg = val;
+                }
+                visibleMessageEnd = chatMessageBuffer.length;
+                visibleMessageStart = trimWindowByChars(visibleMessageEnd, Math.max(MESSAGE_CHAR_WINDOW, MESSAGE_CHAR_WINDOW + MESSAGE_CHAR_CHUNK));
+                rerenderVisibleMessages(false);
             });
         }
 
@@ -2255,6 +2398,7 @@
         }
 
         function sendPayload(data) {
+            if(isRateLimited('send_payload', 22, 12000)) return null;
             if(!canInteractWithCurrentChat() && !currentChatId?.startsWith('group_') && !isFavoritesChat(currentChatId)) return null;
             const isGroup = currentChatId.startsWith('group_');
             const isFavorites = isFavoritesChat(currentChatId);
@@ -2360,7 +2504,7 @@
             db.ref(`users/${myId}/chats`).once('value', chatSnap => {
                 const ids = Object.keys(chatSnap.val() || {}).filter(uid => !uid.startsWith('group_') && !(currentGroupData.members || {})[uid]);
                 if(!ids.length) {
-                    wrap.innerHTML = '<div style="opacity:.7;padding:12px;">Нет доступных пользователей</div>';
+                    wrap.innerHTML = `<div style="opacity:.7;padding:12px;">${langData[currentLang].no_users_available}</div>`;
                     return;
                 }
                 ids.forEach(uid => {
@@ -2370,13 +2514,19 @@
                         const row = document.createElement('div');
                         row.className = 'user-check-item';
                         row.style.justifyContent = 'space-between';
-                        row.innerHTML = `<span>${user.nick || uid}</span>`;
+                        row.innerHTML = `
+                            <div class="check-avatar" style="${user.avatar ? `background-image:url(${user.avatar});` : ''}">${user.avatar ? '' : (user.nick || uid)[0]}</div>
+                            <div class="member-main">
+                                <span class="member-title">${user.nick || uid}</span>
+                                <span class="member-subtitle">${user.online ? langData[currentLang].online : formatLastSeen(user.lastSeen)}</span>
+                            </div>
+                        `;
                         const btn = document.createElement('button');
                         btn.className = 'btn';
                         btn.style.width = 'auto';
                         btn.style.padding = '8px 12px';
                         btn.style.fontSize = '12px';
-                        btn.innerText = 'Добавить';
+                        btn.innerText = langData[currentLang].add_btn;
                         btn.onclick = () => addUserToCurrentGroup(uid);
                         row.appendChild(btn);
                         wrap.appendChild(row);
@@ -2423,14 +2573,21 @@
                     const row = document.createElement('div');
                     row.className = 'user-check-item';
                     row.style.justifyContent = 'space-between';
-                    row.innerHTML = `<span>${user.nick}${group.admin === uid ? ' • admin' : ''}</span>`;
+                    const userStatus = user.online ? langData[currentLang].online : formatLastSeen(user.lastSeen);
+                    row.innerHTML = `
+                        <div class="check-avatar" style="${user.avatar ? `background-image:url(${user.avatar});` : ''}">${user.avatar ? '' : (user.nick || uid)[0]}</div>
+                        <div class="member-main">
+                            <span class="member-title">${user.nick}${group.admin === uid ? ' • admin' : ''}</span>
+                            <span class="member-subtitle">${userStatus || langData[currentLang].was_online}</span>
+                        </div>
+                    `;
                     if(group.admin === myId && uid !== myId) {
                         const btn = document.createElement('button');
                         btn.className = 'btn';
                         btn.style.width = 'auto';
                         btn.style.padding = '8px 12px';
                         btn.style.fontSize = '12px';
-                        btn.innerText = 'Передать админа';
+                        btn.innerText = langData[currentLang].made_admin;
                         btn.onclick = () => transferGroupAdmin(uid);
                         row.appendChild(btn);
                     }
@@ -2880,7 +3037,13 @@
             if(sender) await sender.replaceTrack(nextTrack);
         }
 
-        function toggleFab(e) { e.stopPropagation(); document.getElementById('fab-menu').classList.toggle('active'); }
+        function toggleFab(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('fab-menu');
+            const fab = document.getElementById('fab-main');
+            menu.classList.toggle('active');
+            fab.classList.toggle('rotate', menu.classList.contains('active'));
+        }
         function hideAllMenus() {
             const chatMenu = document.getElementById('chat-menu');
             const msgMenu = document.getElementById('msg-menu');
@@ -2889,6 +3052,7 @@
             chatMenu.classList.remove('show-anim');
             msgMenu.classList.remove('show-anim');
             document.getElementById('fab-menu').classList.remove('active');
+            document.getElementById('fab-main').classList.remove('rotate');
         }
 
         // FIX: Add history handling for Tab Switching
