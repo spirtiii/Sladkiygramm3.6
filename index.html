@@ -385,8 +385,8 @@
         <div class="header glass-panel"><div class="header-title">Sladkiygramm</div></div>
         <div class="chat-list" id="chats-container"></div>
         <div class="archive-tab glass-panel" onclick="openArchiveScreen()">
-            <span><i class="fas fa-box-archive"></i> Архив</span>
-            <small id="archive-count-label">0 чатов</small>
+            <span><i class="fas fa-box-archive"></i> <span data-key="archive">Archive</span></span>
+            <small id="archive-count-label">0 chats</small>
         </div>
 
         <!-- FAB -->
@@ -412,7 +412,7 @@
     <div id="archive-screen" class="screen" style="background: var(--glass); z-index: 12;">
         <div class="header glass-panel">
             <i class="fas fa-arrow-left" style="font-size: 22px; padding: 10px; cursor: pointer;" onclick="closeArchiveScreen()"></i>
-            <div class="header-title"><i class="fas fa-box-archive"></i> Архив</div>
+            <div class="header-title"><i class="fas fa-box-archive"></i> <span data-key="archive">Archive</span></div>
             <div style="width:42px;"></div>
         </div>
         <div class="chat-list archive-list" id="archive-container"></div>
@@ -426,7 +426,7 @@
                 <div class="edit-icon"><i class="fas fa-camera"></i></div>
             </div>
             <input type="file" id="avatar-input" hidden accept="image/*" onchange="uploadAvatar(this)">
-            <button class="btn" style="margin-top:8px; margin-bottom: 10px; padding:8px 14px; font-size:12px;" onclick="removeAvatar()">Удалить аватарку</button>
+            <button class="btn" style="margin-top:8px; margin-bottom: 10px; padding:8px 14px; font-size:12px;" onclick="removeAvatar()" data-key="delete_avatar">Delete avatar</button>
             <div style="font-size: 26px; font-weight: 800; margin-bottom: 10px; color: var(--text); cursor:pointer;" id="profile-nick-display" onclick="openNicknameEditor()">$User</div>
 
             <textarea id="edit-bio" rows="3" placeholder="Bio / Description..." style="font-size: 15px; text-align: center;"></textarea>
@@ -530,16 +530,8 @@
                 <div class="attach-btn" onclick="document.getElementById('media-input').click()"><i class="fas fa-plus"></i></div>
                 <input type="text" id="msg-input" style="margin: 0; background: rgba(255,255,255,0.08); border: none;" placeholder="Message..." autocomplete="off">
                 <div id="voice-recording" class="voice-recording"><span class="voice-dot"></span><span id="voice-recording-time">00:00.000</span></div>
-                <div id="video-note-btn" class="video-note-btn" title="Зажми для видео заметки"><i class="fas fa-circle"></i></div>
                 <div class="send-btn" id="send-btn" onclick="handleSendAction()"><i class="fas fa-paper-plane"></i></div>
             </div>
-        </div>
-    </div>
-    <div id="video-note-overlay" class="video-note-overlay">
-        <video id="video-note-preview" class="video-note-preview" autoplay muted playsinline></video>
-        <div class="video-note-status">
-            <span><span class="voice-dot"></span> <span id="video-note-time">00:00.000</span></span>
-            <button id="video-note-switch" class="video-note-switch" type="button"><i class="fas fa-rotate"></i></button>
         </div>
     </div>
 
@@ -662,7 +654,7 @@
             <i class="fas fa-ban"></i> <span id="chat-block-label">Заблокировать</span>
         </div>
         <div class="ctx-item" onclick="toggleArchiveSelectedChat()">
-            <i class="fas fa-box-archive"></i> <span id="chat-archive-label">В архив</span>
+            <i class="fas fa-box-archive"></i> <span id="chat-archive-label">Archive</span>
         </div>
         <div class="ctx-item" onclick="toggleMuteSelectedChat()">
             <i class="fas fa-bell-slash" id="chat-mute-icon"></i> <span id="chat-mute-label">Выключить уведомления</span>
@@ -841,7 +833,13 @@
                 notes_title: "Favorites", notes_desc: "Personal notes", members_online: "online", only_you_online: "Only you online",
                 group_manage: "Group Management", add_user: "Add user", add_to_group: "Add to group",
                 add_btn: "Add", no_users_available: "No available users", made_admin: "Make admin", was_online: "was online",
-                auth_rate_limited: "Too many attempts. Please wait a bit."
+                auth_rate_limited: "Too many attempts. Please wait a bit.", archive: "Archive", chats_count: "chats",
+                delete_avatar: "Delete avatar", added_items: "item(s) added", download: "Download", video_note: "Video note",
+                chat_archived: "Chat moved to archive", chat_unarchived: "Chat moved out of archive",
+                favorites_cannot_delete: "Favorites cannot be deleted", blocked_you: "You are blocked!",
+                you_blocked_user: "You blocked this user", added_to_group_msg: "You were added to group",
+                only_creator_edit_group: "Only creator can change group name and description",
+                enter_group_name_alert: "Enter group name", creator_changed_group_data: "✏️ Creator changed group details"
             },
             ru: {
                 slogan: "Твой тот самый сладкий мессенджер!", login_btn: "Полететь 🚀", chats: "Чаты", settings: "Настройки", profile: "Профиль", theme: "Тема", logout: "Выйти", save: "Сохранить",
@@ -864,7 +862,13 @@
                 notes_title: "Избранное", notes_desc: "Личные заметки", members_online: "в сети", only_you_online: "Только вы в сети",
                 group_manage: "Управление группой", add_user: "Добавить пользователя", add_to_group: "Добавить в группу",
                 add_btn: "Добавить", no_users_available: "Нет доступных пользователей", made_admin: "Передать админа", was_online: "был(а) в сети",
-                auth_rate_limited: "Слишком много попыток. Подождите немного."
+                auth_rate_limited: "Слишком много попыток. Подождите немного.", archive: "Архив", chats_count: "чатов",
+                delete_avatar: "Удалить аватарку", added_items: "элементов добавлено", download: "Скачать", video_note: "Видео-заметка",
+                chat_archived: "Чат отправлен в архив", chat_unarchived: "Чат возвращён из архива",
+                favorites_cannot_delete: "Избранное нельзя удалить", blocked_you: "Вас заблокировали!",
+                you_blocked_user: "Вы заблокировали пользователя", added_to_group_msg: "Вас добавили в группу",
+                only_creator_edit_group: "Только создатель может менять название и описание",
+                enter_group_name_alert: "Введите название группы", creator_changed_group_data: "✏️ Создатель изменил данные группы"
             }
         };
 
@@ -910,6 +914,11 @@
         let chatMessageBuffer = [];
         let visibleMessageStart = 0;
         let visibleMessageEnd = 0;
+        let loadedRangeStart = 0;
+        let oldestLoadedKey = null;
+        let hasOlderMessages = true;
+        let loadingOlderMessages = false;
+        let activeMessagesCid = '';
         const actionRateMap = {};
 
         window.onload = () => {
@@ -982,6 +991,7 @@
             const channelCb = document.getElementById('group-is-channel');
             if(channelCb) updateChannelToggleVisual(channelCb.checked);
             if(currentGroupData && document.getElementById('group-info-modal').style.display === 'flex') renderGroupMembers(currentGroupData);
+            updateArchiveCount();
         }
 
         function formatLastSeen(ts) {
@@ -1034,7 +1044,7 @@
         function updateArchiveCount() {
             const count = Object.values(chatMetaMap).filter(chat => chat.archived).length;
             const label = document.getElementById('archive-count-label');
-            if(label) label.innerText = `${count} ${count === 1 ? 'чат' : 'чатов'}`;
+            if(label) label.innerText = `${count} ${langData[currentLang].chats_count || 'chats'}`;
         }
 
         function closeChatRoomUI(resetHistoryState = false) {
@@ -1056,6 +1066,11 @@
             chatMessageBuffer = [];
             visibleMessageStart = 0;
             visibleMessageEnd = 0;
+            loadedRangeStart = 0;
+            oldestLoadedKey = null;
+            hasOlderMessages = true;
+            loadingOlderMessages = false;
+            activeMessagesCid = '';
             currentChatAccess = { blockedByMe: false, blockedMe: false };
             updateChatAccessUI();
             updateSendButtonState();
@@ -1098,23 +1113,27 @@
             if(val === null) return;
             const next = val.trim();
             if(!/^[a-zA-Z0-9]+$/.test(next)) return alert('Только английские буквы и цифры');
-            const newId = next.toLowerCase();
-            if(newId === myId) return;
-            db.ref(`users/${newId}`).once('value', snap => {
-                if(snap.exists()) return alert('Этот ник уже занят');
-                db.ref(`users/${myId}`).once('value', meSnap => {
-                    const oldData = meSnap.val() || {};
-                    const migrated = { ...oldData, nick: '$' + next };
-                    db.ref(`users/${newId}`).set(migrated).then(() => {
-                        db.ref(`users/${myId}`).remove();
-                        myId = newId;
-                        myNick = '$' + next;
-                        localStorage.setItem('sladkiy_session_user', myId);
-                        localStorage.setItem('sladkiy_session_nick', myNick);
-                        document.getElementById('profile-nick-display').innerText = myNick;
-                        showToast('Ник обновлен');
+            if(next.toLowerCase() === myId) return;
+            const updatedNick = '$' + next;
+            db.ref(`users/${myId}`).update({ nick: updatedNick }).then(() => {
+                myNick = updatedNick;
+                localStorage.setItem('sladkiy_session_nick', myNick);
+                document.getElementById('profile-nick-display').innerText = myNick;
+                db.ref(`users/${myId}/chats`).once('value', snap => {
+                    const chats = snap.val() || {};
+                    Object.keys(chats).forEach(cid => {
+                        if(cid.startsWith('group_') || isFavoritesChat(cid)) return;
+                        const pairCid = [myId, cid].sort().join('_');
+                        db.ref(`messages/${pairCid}`).orderByChild('from').equalTo(myId).once('value', msgSnap => {
+                            const updates = {};
+                            msgSnap.forEach(child => {
+                                updates[`${child.key}/fromNick`] = updatedNick;
+                            });
+                            if(Object.keys(updates).length) db.ref(`messages/${pairCid}`).update(updates);
+                        });
                     });
                 });
+                showToast('Ник обновлен');
             });
         }
 
@@ -1232,9 +1251,9 @@
             if(isRestricted) {
                 banner.classList.add('active', currentChatAccess.blockedMe ? 'blocked-by-other' : 'blocked-by-me');
                 banner.innerHTML = currentChatAccess.blockedMe
-                    ? '<i class="fas fa-ban"></i><span>Вас заблокировали!</span>'
-                    : '<i class="fas fa-user-slash"></i><span>Вы заблокировали пользователя</span>';
-                input.placeholder = currentChatAccess.blockedMe ? 'Вас заблокировали!' : 'Вы заблокировали пользователя';
+                    ? `<i class="fas fa-ban"></i><span>${langData[currentLang].blocked_you}</span>`
+                    : `<i class="fas fa-user-slash"></i><span>${langData[currentLang].you_blocked_user}</span>`;
+                input.placeholder = currentChatAccess.blockedMe ? langData[currentLang].blocked_you : langData[currentLang].you_blocked_user;
             } else {
                 if(currentLang === 'ru') input.placeholder = 'Сообщение...';
                 else input.placeholder = 'Message...';
@@ -1540,7 +1559,7 @@
             const wrap = document.getElementById('media-preview-bar');
             if(!selectedMedia.length) { wrap.style.display='none'; wrap.innerHTML=''; return; }
             wrap.style.display = 'flex';
-            wrap.innerHTML = `<div class="media-preview-meta">${selectedMedia.length} item(s) added</div>`;
+            wrap.innerHTML = `<div class="media-preview-meta">${selectedMedia.length} ${langData[currentLang].added_items || 'item(s) added'}</div>`;
             selectedMedia.forEach((m, idx) => {
                 const card = document.createElement('div');
                 card.className = 'media-preview-card';
@@ -1627,8 +1646,53 @@
             if(keepBottom && wasNearBottom) area.scrollTop = area.scrollHeight;
         }
 
-        function expandMessageWindowUp() {
-            if(visibleMessageStart <= 0) return;
+        async function loadOlderMessagesChunk(chunkSize = 80) {
+            if(!activeMessagesCid || loadingOlderMessages || !hasOlderMessages) return false;
+            if(!oldestLoadedKey) return false;
+            loadingOlderMessages = true;
+            try {
+                const snap = await db.ref(`messages/${activeMessagesCid}`)
+                    .orderByKey()
+                    .endAt(oldestLoadedKey)
+                    .limitToLast(chunkSize + 1)
+                    .once('value');
+                const list = [];
+                snap.forEach(child => {
+                    if(child.key === oldestLoadedKey) return;
+                    const msg = child.val();
+                    if(msg?.deletedFor && msg.deletedFor[myId]) return;
+                    list.push({ key: child.key, msg });
+                });
+                if(!list.length) {
+                    hasOlderMessages = false;
+                    return false;
+                }
+                oldestLoadedKey = list[0].key;
+                loadedRangeStart = Math.max(0, loadedRangeStart - list.length);
+                chatMessageBuffer = [...list, ...chatMessageBuffer];
+                return true;
+            } finally {
+                loadingOlderMessages = false;
+            }
+        }
+
+        async function expandMessageWindowUp() {
+            if(visibleMessageStart <= 0) {
+                const area = document.getElementById('messages-area');
+                const beforeHeight = area.scrollHeight;
+                const beforeTop = area.scrollTop;
+                const loaded = await loadOlderMessagesChunk(90);
+                if(loaded) {
+                    visibleMessageStart = 0;
+                    rerenderVisibleMessages(false);
+                    const afterHeight = area.scrollHeight;
+                    area.scrollTop = beforeTop + (afterHeight - beforeHeight);
+                }
+                return;
+            }
+            const area = document.getElementById('messages-area');
+            const beforeHeight = area.scrollHeight;
+            const beforeTop = area.scrollTop;
             let chars = 0;
             let nextStart = visibleMessageStart;
             while(nextStart > 0 && chars < MESSAGE_CHAR_CHUNK) {
@@ -1637,6 +1701,8 @@
             }
             visibleMessageStart = nextStart;
             rerenderVisibleMessages(false);
+            const afterHeight = area.scrollHeight;
+            area.scrollTop = beforeTop + (afterHeight - beforeHeight);
         }
 
         function checkAuthFlow() {
@@ -1849,8 +1915,8 @@
              const isDirectChat = !id.startsWith('group_') && !isFavoritesChat(id);
              document.getElementById('chat-block-action').style.display = isDirectChat ? 'flex' : 'none';
              document.getElementById('chat-report-action').style.display = isDirectChat ? 'flex' : 'none';
-             document.getElementById('chat-block-label').innerText = chat.blockedByMe ? 'Разблокировать' : 'Заблокировать';
-             document.getElementById('chat-archive-label').innerText = chat.archived ? 'Достать из архивов' : 'В архив';
+             document.getElementById('chat-block-label').innerText = chat.blockedByMe ? (currentLang === 'ru' ? 'Разблокировать' : 'Unblock') : (currentLang === 'ru' ? 'Заблокировать' : 'Block');
+             document.getElementById('chat-archive-label').innerText = chat.archived ? (currentLang === 'ru' ? 'Из архива' : 'Unarchive') : (currentLang === 'ru' ? 'В архив' : 'Archive');
              document.getElementById('chat-mute-label').innerText = chat.muted ? langData[currentLang].unmute_chat : langData[currentLang].mute_chat;
              const muteIcon = document.getElementById('chat-mute-icon');
              muteIcon.className = chat.muted ? 'fas fa-bell' : 'fas fa-bell-slash';
@@ -1874,7 +1940,7 @@
                 archived: nextArchived,
                 muted: nextArchived
             });
-            showToast(nextArchived ? 'Чат отправлен в архив' : 'Чат возвращён из архива');
+            showToast(nextArchived ? langData[currentLang].chat_archived : langData[currentLang].chat_unarchived);
             hideAllMenus();
         }
 
@@ -1905,7 +1971,7 @@
                         currentChatAccess.blockedByMe = nextBlocked;
                         updateChatAccessUI();
                     }
-                    showToast(nextBlocked ? 'Пользователь заблокирован' : 'Пользователь разблокирован');
+                    showToast(nextBlocked ? (currentLang === 'ru' ? 'Пользователь заблокирован' : 'User blocked') : (currentLang === 'ru' ? 'Пользователь разблокирован' : 'User unblocked'));
                     renderChats();
                 }).catch(() => showToast('Ошибка блокировки, попробуйте снова'));
             });
@@ -1943,7 +2009,7 @@
         function deleteChat(everyone) {
             const cid = selectedIdForMenu;
             if(isFavoritesChat(cid)) {
-                showToast('Избранное нельзя удалить');
+                showToast(langData[currentLang].favorites_cannot_delete);
                 document.getElementById('delete-chat-modal').style.display='none';
                 return;
             }
@@ -2184,21 +2250,48 @@
                 });
             });
 
-            db.ref(`messages/${cid}`).off();
             const messagesRef = db.ref(`messages/${cid}`);
             chatMessageBuffer = [];
             visibleMessageStart = 0;
             visibleMessageEnd = 0;
+            loadedRangeStart = 0;
+            oldestLoadedKey = null;
+            hasOlderMessages = true;
+            loadingOlderMessages = false;
+            activeMessagesCid = cid;
             area.onscroll = () => {
                 if(area.scrollTop < 80) expandMessageWindowUp();
             };
-            trackChatListener(messagesRef.limitToLast(2000), 'child_added', s => {
-                const msg = s.val();
-                if(msg.deletedFor && msg.deletedFor[myId]) return;
-                chatMessageBuffer.push({ key: s.key, msg });
+
+            messagesRef.orderByKey().limitToLast(120).once('value', snap => {
+                chatMessageBuffer = [];
+                snap.forEach(child => {
+                    const msg = child.val();
+                    if(msg?.deletedFor && msg.deletedFor[myId]) return;
+                    chatMessageBuffer.push({ key: child.key, msg });
+                });
+                loadedRangeStart = 0;
+                oldestLoadedKey = chatMessageBuffer[0]?.key || null;
+                hasOlderMessages = Boolean(oldestLoadedKey);
                 visibleMessageEnd = chatMessageBuffer.length;
                 visibleMessageStart = trimWindowByChars(visibleMessageEnd, MESSAGE_CHAR_WINDOW);
                 rerenderVisibleMessages(true);
+                area.scrollTop = area.scrollHeight;
+            });
+
+            trackChatListener(messagesRef.limitToLast(1), 'child_added', s => {
+                const msg = s.val();
+                if(msg?.deletedFor && msg.deletedFor[myId]) return;
+                const existingIdx = chatMessageBuffer.findIndex(m => m.key === s.key);
+                const wasNearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 120;
+                if(existingIdx !== -1) {
+                    chatMessageBuffer[existingIdx].msg = msg;
+                } else {
+                    chatMessageBuffer.push({ key: s.key, msg });
+                }
+                visibleMessageEnd = chatMessageBuffer.length;
+                if(wasNearBottom) visibleMessageStart = trimWindowByChars(visibleMessageEnd, MESSAGE_CHAR_WINDOW);
+                rerenderVisibleMessages(wasNearBottom);
                 if(msg.from !== myId && msg.status !== 'read') {
                     db.ref(`messages/${cid}/${s.key}`).update({ status: 'read' });
                     if(msg.type === 'call_invite') showLocalNotification(msg.fromNick || 'Incoming call', 'is calling you', id);
@@ -2209,7 +2302,7 @@
                 const idx = chatMessageBuffer.findIndex(m => m.key === s.key);
                 if(idx !== -1) chatMessageBuffer.splice(idx, 1);
                 visibleMessageEnd = chatMessageBuffer.length;
-                visibleMessageStart = Math.min(visibleMessageStart, visibleMessageEnd);
+                visibleMessageStart = Math.max(0, Math.min(visibleMessageStart, visibleMessageEnd));
                 rerenderVisibleMessages(false);
             });
             trackChatListener(messagesRef, 'child_changed', s => {
@@ -2221,7 +2314,8 @@
                     chatMessageBuffer[idx].msg = val;
                 }
                 visibleMessageEnd = chatMessageBuffer.length;
-                visibleMessageStart = trimWindowByChars(visibleMessageEnd, Math.max(MESSAGE_CHAR_WINDOW, MESSAGE_CHAR_WINDOW + MESSAGE_CHAR_CHUNK));
+                const isNearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 120;
+                if(isNearBottom) visibleMessageStart = trimWindowByChars(visibleMessageEnd, MESSAGE_CHAR_WINDOW + MESSAGE_CHAR_CHUNK);
                 rerenderVisibleMessages(false);
             });
         }
@@ -2300,12 +2394,12 @@
                 media.forEach(m => {
                     if(m.kind === 'video') {
                         const noteClass = m.isVideoNote ? 'video-note' : '';
-                        if(m.isVideoNote) content += `<div class="video-note-badge"><i class="fas fa-circle-play"></i> Video note</div>`;
+                        if(m.isVideoNote) content += `<div class="video-note-badge"><i class="fas fa-circle-play"></i> ${langData[currentLang].video_note || 'Video note'}</div>`;
                         content += `<video controls playsinline class="${noteClass}" src="${m.data}" onclick="event.stopPropagation();openMediaViewer('${m.data}','video')"></video>`;
                     }
                     else if(m.kind === 'file') {
                         const safeName = (m.name || 'file').replace(/</g, '&lt;');
-                        content += `<div class="msg-file-list"><div class="msg-file-item"><span class="msg-file-name"><i class="fas fa-file"></i> ${safeName}</span><a class="msg-file-download" href="${m.data}" download="${safeName}" onclick="event.stopPropagation()">Download</a></div></div>`;
+                        content += `<div class="msg-file-list"><div class="msg-file-item"><span class="msg-file-name"><i class="fas fa-file"></i> ${safeName}</span><a class="msg-file-download" href="${m.data}" download="${safeName}" onclick="event.stopPropagation()">${langData[currentLang].download || 'Download'}</a></div></div>`;
                     }
                     else content += `<img src="${m.data}" alt="media" onclick="event.stopPropagation();openMediaViewer('${m.data}','image')">`;
                 });
@@ -2540,7 +2634,7 @@
             if(!currentGroupData?.id) return;
             db.ref(`groups/${currentGroupData.id}/members/${uid}`).set(true).then(() => {
                 db.ref(`users/${uid}/chats/${currentGroupData.id}`).update({
-                    lastMsg: 'Вас добавили в группу',
+                    lastMsg: langData[currentLang].added_to_group_msg,
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     unread: 1
                 });
@@ -2604,14 +2698,14 @@
         }
 
         function saveGroupInfo() {
-            if(!currentGroupData || currentGroupData.admin !== myId) return alert('Только создатель может менять название и описание');
+            if(!currentGroupData || currentGroupData.admin !== myId) return alert(langData[currentLang].only_creator_edit_group);
             const name = document.getElementById('group-title-input').value.trim();
             const description = document.getElementById('group-desc-input').value.trim();
-            if(!name) return alert('Введите название группы');
+            if(!name) return alert(langData[currentLang].enter_group_name_alert);
             const currentPrefix = currentGroupData.fixedPrefix || '';
             const cleanDesc = currentGroupData.isChannel ? `${currentPrefix}${description.replace(currentPrefix, '')}` : description;
             db.ref(`groups/${currentGroupData.id}`).update({ name, description: cleanDesc });
-            sendPayload({ type: 'text', text: '✏️ Создатель изменил данные группы' });
+            sendPayload({ type: 'text', text: langData[currentLang].creator_changed_group_data });
             document.getElementById('group-info-modal').style.display = 'none';
         }
 
