@@ -327,9 +327,30 @@
         .user-check-item.selected .selection-box i { opacity: 1; transform: scale(1); }
         .channel-toggle-card { display:flex; align-items:center; justify-content:space-between; padding: 10px 12px; border-radius: 12px; border:1px solid rgba(255,255,255,0.14); margin-top:8px; margin-bottom:8px; cursor:pointer; background: rgba(255,255,255,0.04); }
         .channel-toggle-card.active { border-color: var(--primary); background: rgba(217,70,239,0.13); }
+        .entry-lock-screen { position: fixed; inset: 0; z-index: 6000; display:flex; align-items:center; justify-content:center; padding: 18px; background: radial-gradient(circle at top, rgba(120,210,255,0.24), rgba(0,0,0,0.92)); }
+        .entry-lock-card { width:min(94vw, 420px); padding:24px; text-align:center; color: #fff; animation: fadeIn .35s ease; }
+        .entry-lock-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.4px; }
+        .entry-lock-subtitle { font-size: 13px; opacity: 0.78; margin-bottom: 18px; }
+        .entry-lock-input { margin-bottom: 8px; background: rgba(15,15,25,0.35); border: 1px solid rgba(255,255,255,0.2); text-align: center; letter-spacing: 6px; font-size: 24px; font-weight: 700; }
+        .entry-lock-error { min-height: 20px; font-size: 13px; color: #ff8ea1; font-weight: 600; margin-top: 8px; opacity: 0; transition: .2s; }
+        .entry-lock-error.active { opacity: 1; animation: lockErrorFlash .45s ease; }
+        @keyframes lockErrorFlash { 0% { transform: translateX(0); } 30% { transform: translateX(-6px); } 60% { transform: translateX(6px); } 100% { transform: translateX(0); } }
+        .locked-app > :not(#entry-lock-screen) { visibility: hidden; }
+        .group-catalog-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:14px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); cursor:pointer; }
+        .group-catalog-item:active { transform: scale(0.98); }
     </style>
 </head>
-<body class="theme-space" onclick="hideAllMenus()">
+<body class="theme-space locked-app" onclick="hideAllMenus()">
+
+    <div id="entry-lock-screen" class="entry-lock-screen">
+        <div class="entry-lock-card liquid-card">
+            <div class="entry-lock-title">Sladkiy Lock</div>
+            <div class="entry-lock-subtitle">Введите код доступа, чтобы продолжить</div>
+            <input id="entry-lock-input" class="entry-lock-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
+            <button class="btn" onclick="verifyEntryCode()">Продолжить</button>
+            <div id="entry-lock-error" class="entry-lock-error">Неправильный код</div>
+        </div>
+    </div>
 
     <!-- SPLASH -->
     <div id="splash-screen"><div class="candy-spinner">🍬</div></div>
@@ -382,7 +403,10 @@
 
     <!-- MAIN SCREEN -->
     <div id="main-screen" class="screen">
-        <div class="header glass-panel"><div class="header-title">Sladkiygramm</div></div>
+        <div class="header glass-panel">
+            <div class="header-title">Sladkiygramm</div>
+            <button class="glass-cta-btn" style="width:auto; margin-top:0; padding:8px 12px; border-radius:12px;" onclick="openGroupsCatalog()"><i class="fas fa-layer-group"></i> Groups</button>
+        </div>
         <div class="chat-list" id="chats-container"></div>
         <div class="archive-tab glass-panel" onclick="openArchiveScreen()">
             <span><i class="fas fa-box-archive"></i> <span data-key="archive">Archive</span></span>
@@ -551,6 +575,24 @@
             <h3 data-key="search_users" style="margin-bottom:15px;">Search Users</h3>
             <input type="text" id="search-input" placeholder="Type letters..." oninput="doSearch()">
             <div id="search-results" style="flex:1; overflow-y:auto; text-align:left;"></div>
+        </div>
+    </div>
+
+    <div id="groups-catalog-modal" class="modal">
+        <div class="modal-content liquid-card" style="max-width:430px; max-height:78vh; display:flex; flex-direction:column;">
+            <span class="close-modal" onclick="document.getElementById('groups-catalog-modal').style.display='none'">&times;</span>
+            <h3 style="margin-bottom:12px;">Существующие группы</h3>
+            <div id="groups-catalog-list" style="overflow:auto; text-align:left;"></div>
+        </div>
+    </div>
+
+    <div id="user-admin-modal" class="modal">
+        <div class="modal-content liquid-card" style="max-width:390px;">
+            <span class="close-modal" onclick="document.getElementById('user-admin-modal').style.display='none'">&times;</span>
+            <h3 id="user-admin-title">Управление пользователем</h3>
+            <button class="btn" style="margin-top:12px;background:#e35151;" onclick="adminDeleteUser()">Удалить пользователя</button>
+            <button class="btn" style="margin-top:10px;background:#6b5cff;" onclick="adminBlockUser()">Заблокировать</button>
+            <button class="btn" style="margin-top:10px;" onclick="adminResetUserChats()">Очистить все чаты</button>
         </div>
     </div>
 
@@ -920,6 +962,8 @@
         let loadingOlderMessages = false;
         let activeMessagesCid = '';
         const actionRateMap = {};
+        let adminTargetUserId = null;
+        let appUnlocked = false;
 
         window.onload = () => {
             try {
@@ -934,6 +978,10 @@
                 document.querySelectorAll('.code-digit').forEach((el, idx, arr) => {
                     el.oninput = () => { if(el.value && idx < 3) arr[idx+1].focus(); };
                 });
+                document.getElementById('entry-lock-input')?.addEventListener('keydown', e => {
+                    if(e.key === 'Enter') verifyEntryCode();
+                });
+                setTimeout(() => document.getElementById('entry-lock-input')?.focus(), 350);
 
                 document.getElementById('msg-input').addEventListener('input', () => { handleTyping(); updateSendButtonState(); mediaDraftCaption = document.getElementById('msg-input').value; });
                 document.getElementById('group-channel-toggle')?.addEventListener('click', (e) => {
@@ -1705,25 +1753,50 @@
             area.scrollTop = beforeTop + (afterHeight - beforeHeight);
         }
 
+        function getEntryCodeHash() {
+            const encoded = 'Mzk6MTgzOjM5OjE2NQ==';
+            return atob(encoded).split(':').map(n => Number(n));
+        }
+
+        function makeCodeHash(raw) {
+            const salt = [11, 37, 5, 19];
+            return raw.split('').map((d, i) => (Number(d) + salt[i]) * (i + 3) + (i * 7));
+        }
+
+        function verifyEntryCode() {
+            const input = document.getElementById('entry-lock-input');
+            const error = document.getElementById('entry-lock-error');
+            const val = (input?.value || '').trim();
+            const ok = val.length === 4 && JSON.stringify(makeCodeHash(val)) === JSON.stringify(getEntryCodeHash());
+            if(ok) {
+                appUnlocked = true;
+                document.body.classList.remove('locked-app');
+                document.getElementById('entry-lock-screen').style.display = 'none';
+                return;
+            }
+            if(error) {
+                error.classList.remove('active');
+                void error.offsetWidth;
+                error.classList.add('active');
+            }
+            if(input) {
+                input.value = '';
+                input.style.borderColor = '#ff4d6d';
+                setTimeout(() => { input.style.borderColor = 'rgba(255,255,255,0.2)'; }, 350);
+                input.focus();
+            }
+        }
+
         function checkAuthFlow() {
+            if(!appUnlocked) return;
             if(isRateLimited('auth', 6, 60000)) { showToast(langData[currentLang].auth_rate_limited); return; }
             if(document.getElementById('bot-field')?.value) return;
             let nick = document.getElementById('nick-input').value.trim();
             if (!/^[a-zA-Z0-9]+$/.test(nick)) return alert("English letters & numbers only!");
             myNick = '$' + nick;
             myId = nick.toLowerCase();
-            if(localStorage.getItem('sladkiy_trusted_' + myId) === 'true') { startApp(); return; }
-            db.ref(`users/${myId}`).once('value', s => {
-                if(s.exists() && s.val().loginCode) {
-                    correctCode = s.val().loginCode;
-                    document.getElementById('login-code-modal').style.display = 'flex';
-                } else {
-                    let newCode = Math.floor(1000 + Math.random() * 9000).toString();
-                    db.ref(`users/${myId}`).update({ loginCode: newCode });
-                    localStorage.setItem('sladkiy_trusted_' + myId, 'true');
-                    startApp();
-                }
-            });
+            localStorage.setItem('sladkiy_trusted_' + myId, 'true');
+            startApp();
         }
 
         function verifyLoginCode() {
@@ -1759,7 +1832,7 @@
                 myAvatar = val.avatar || '';
                 if(val.nick) myNick = val.nick;
                 document.getElementById('edit-bio').value = val.bio || '';
-                document.getElementById('my-secret-code').innerText = val.loginCode || '----';
+                document.getElementById('my-secret-code').innerText = '••••';
                 updateProfileUI();
             });
             peer = new Peer(myId);
@@ -2825,7 +2898,115 @@
                     div.className = 'search-result-item';
                     div.innerHTML = `<div class="search-avatar" style="${u.avatar?`background-image:url(${u.avatar})`:''}">${u.avatar?'':u.nick[0]}</div><div><div style="font-weight:bold;">${u.nick}</div><div style="font-size:12px;opacity:.72;">${u.bio || 'Открыть профиль'}</div></div>`;
                     div.onclick = () => openUserPreview(uid, u);
+                    bindLongPressUserAdmin(div, uid, u);
                     res.appendChild(div);
+                });
+            });
+        }
+
+        function bindLongPressUserAdmin(el, uid, u) {
+            let timer;
+            const open = (x, y) => {
+                adminTargetUserId = uid;
+                document.getElementById('user-admin-title').innerText = `Управление: ${u?.nick || uid}`;
+                const modal = document.getElementById('user-admin-modal');
+                modal.style.display = 'flex';
+                const card = modal.querySelector('.modal-content');
+                if(card && y) card.style.transform = `translateY(${Math.max(-30, (y - window.innerHeight / 2) * 0.08)}px)`;
+            };
+            el.oncontextmenu = (e) => {
+                e.preventDefault();
+                open(e.clientX, e.clientY);
+            };
+            el.ontouchstart = (e) => { timer = setTimeout(() => open(e.touches[0].clientX, e.touches[0].clientY), 650); };
+            el.ontouchend = () => clearTimeout(timer);
+            el.ontouchmove = () => clearTimeout(timer);
+        }
+
+        function openGroupsCatalog() {
+            history.pushState({view: 'modal'}, '', '');
+            const modal = document.getElementById('groups-catalog-modal');
+            const list = document.getElementById('groups-catalog-list');
+            list.innerHTML = '<div style="opacity:.7;padding:8px;">Загрузка...</div>';
+            modal.style.display = 'flex';
+            db.ref('groups').once('value', snap => {
+                list.innerHTML = '';
+                const rows = [];
+                snap.forEach(child => rows.push({ id: child.key, g: child.val() || {} }));
+                if(!rows.length) {
+                    list.innerHTML = '<div style="opacity:.7;padding:8px;">Групп пока нет</div>';
+                    return;
+                }
+                rows.forEach(({ id, g }) => {
+                    const memberCount = Object.keys(g.members || {}).length;
+                    const item = document.createElement('div');
+                    item.className = 'group-catalog-item';
+                    item.innerHTML = `<div class="search-avatar" style="${g.avatar ? `background-image:url(${g.avatar})` : ''}; margin-right:0;">${g.avatar ? '' : '<i class="fas fa-users"></i>'}</div><div style="flex:1;"><div style="font-weight:700;">${g.name || id}</div><div style="font-size:12px;opacity:.75;">${g.isChannel ? 'Канал' : 'Группа'} • ${memberCount} участников</div></div>`;
+                    item.onclick = () => {
+                        document.getElementById('groups-catalog-modal').style.display = 'none';
+                        openChat(id);
+                    };
+                    list.appendChild(item);
+                });
+            });
+        }
+
+        function adminDeleteUser() {
+            const uid = adminTargetUserId;
+            if(!uid) return;
+            if(!confirm(`Удалить пользователя ${uid} из базы данных?`)) return;
+            db.ref('users').once('value', snap => {
+                const updates = {};
+                snap.forEach(us => {
+                    const otherId = us.key;
+                    updates[`users/${otherId}/chats/${uid}`] = null;
+                    updates[`messages/${[otherId, uid].sort().join('_')}`] = null;
+                });
+                updates[`users/${uid}`] = null;
+                updates[`blocks/${uid}`] = null;
+                db.ref().update(updates).then(() => {
+                    db.ref('groups').once('value', gs => {
+                        const gu = {};
+                        gs.forEach(g => {
+                            if(g.child(`members/${uid}`).exists()) gu[`groups/${g.key}/members/${uid}`] = null;
+                        });
+                        if(Object.keys(gu).length) db.ref().update(gu);
+                    });
+                    showToast('Пользователь удалён');
+                    document.getElementById('user-admin-modal').style.display = 'none';
+                    doSearch();
+                });
+            });
+        }
+
+        function adminBlockUser() {
+            const uid = adminTargetUserId;
+            if(!uid) return;
+            db.ref(`users/${uid}/blocked`).set(true).then(() => {
+                showToast('Аккаунт заблокирован');
+                document.getElementById('user-admin-modal').style.display = 'none';
+            });
+        }
+
+        function adminResetUserChats() {
+            const uid = adminTargetUserId;
+            if(!uid) return;
+            if(!confirm('Очистить все чаты и сбросить аккаунт?')) return;
+            db.ref(`users/${uid}/chats`).once('value', snap => {
+                const updates = {};
+                snap.forEach(c => {
+                    const cid = c.key;
+                    if(cid.startsWith('group_')) return;
+                    updates[`messages/${[uid, cid].sort().join('_')}`] = null;
+                    updates[`users/${cid}/chats/${uid}`] = null;
+                });
+                updates[`users/${uid}/chats`] = null;
+                updates[`users/${uid}/avatar`] = '';
+                updates[`users/${uid}/bio`] = '';
+                updates[`users/${uid}/blocked`] = false;
+                db.ref().update(updates).then(() => {
+                    showToast('Все чаты очищены');
+                    document.getElementById('user-admin-modal').style.display = 'none';
                 });
             });
         }
