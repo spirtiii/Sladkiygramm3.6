@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sladkiygramm 3.6 🍬</title>
+    <meta name="description" content="Sladkiygramm messenger with chats, groups, channels and calls.">
+    <meta name="google-site-verification" content="googleec76ca18477776ff">
+    <link rel="icon" type="image/svg+xml" href="candy.svg">
     <link rel="manifest" href="manifest.webmanifest">
     <!-- ICONS & FONTS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -327,6 +330,17 @@
         .user-check-item.selected .selection-box i { opacity: 1; transform: scale(1); }
         .channel-toggle-card { display:flex; align-items:center; justify-content:space-between; padding: 10px 12px; border-radius: 12px; border:1px solid rgba(255,255,255,0.14); margin-top:8px; margin-bottom:8px; cursor:pointer; background: rgba(255,255,255,0.04); }
         .channel-toggle-card.active { border-color: var(--primary); background: rgba(217,70,239,0.13); }
+        .header-action-btn { width: 36px; height: 36px; border-radius: 10px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.08); cursor:pointer; transition:0.2s; }
+        .header-action-btn.active { background: #ff3b4f; border-color: #ff5f70; color:#fff; box-shadow:0 0 0 2px rgba(255,59,79,0.25); }
+        .chat-search-bar { display:none; align-items:center; gap:8px; margin: 8px 10px 0; padding: 8px; border-radius: 14px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); }
+        .chat-search-bar.active { display:flex; }
+        .chat-search-bar input { margin:0; border:none; background: rgba(0,0,0,0.18); }
+        .msg.search-hit { outline: 2px solid #ff6b7e; box-shadow: 0 0 0 2px rgba(255,107,126,0.25); }
+        .member-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+        .member-action-btn { border:none; border-radius:10px; padding:6px 9px; font-size:11px; cursor:pointer; color:#fff; background: rgba(255,255,255,0.18); }
+        .member-action-btn.kick { background:#ff4d6d; }
+        .member-action-btn.owner { background:#3f8cff; }
+
     </style>
 </head>
 <body class="theme-space" onclick="hideAllMenus()">
@@ -460,6 +474,7 @@
                 <button class="btn" style="padding:10px 12px;" onclick="setDayNightTheme('day')" data-key="day_theme">Day Theme</button>
                 <button class="btn" style="padding:10px 12px;" onclick="setDayNightTheme('night')" data-key="night_theme">Night Theme</button>
             </div>
+            <button class="btn" style="padding:10px 12px; margin-bottom:10px;" onclick="toggleRoundClockTheme()" data-key="round_clock_theme">Round-the-clock Theme</button>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div onclick="setTheme('theme-space')" id="theme-space" class="btn" style="background:#302b63;">Space</div>
                 <div onclick="setTheme('theme-sunset')" id="theme-sunset" class="btn" style="background:#ff5e62;">Sunset</div>
@@ -485,6 +500,10 @@
                 <div id="room-name" style="font-weight: 700; font-size: 17px;">$User</div>
                 <div id="room-status" style="font-size: 12px; opacity: 0.7;">offline</div>
             </div>
+            <div id="chat-search-toggle" class="header-action-btn" onclick="toggleChatSearch(event)"><i class="fas fa-search"></i></div>
+        </div>
+        <div id="chat-search-bar" class="chat-search-bar">
+            <input id="chat-search-input" type="text" placeholder="Search in chat..." oninput="runChatSearch()">
         </div>
         <!-- PINNED BAR -->
         <div id="pinned-bar" class="pinned-bar" onclick="openPinnedList()">
@@ -548,7 +567,11 @@
     <div id="search-modal" class="modal">
         <div class="modal-content glass-panel" style="height: 400px; display:flex; flex-direction:column;">
             <span class="close-modal" onclick="document.getElementById('search-modal').style.display='none'">&times;</span>
-            <h3 data-key="search_users" style="margin-bottom:15px;">Search Users</h3>
+            <h3 data-key="search_users" style="margin-bottom:10px;">Search Users</h3>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;opacity:.9;margin-bottom:10px;">
+                <input type="checkbox" id="search-groups-only" onchange="doSearch()">
+                <span data-key="search_groups_only">Search groups and channels only</span>
+            </label>
             <input type="text" id="search-input" placeholder="Type letters..." oninput="doSearch()">
             <div id="search-results" style="flex:1; overflow-y:auto; text-align:left;"></div>
         </div>
@@ -609,7 +632,7 @@
         <div class="modal-content glass-panel">
             <span class="close-modal" onclick="document.getElementById('media-viewer-modal').style.display='none'">&times;</span>
             <div id="media-viewer-content" style="margin-top:15px;"></div>
-            <a id="media-save-btn" class="btn" download style="display:inline-block; margin-top:12px;">Сохранить</a>
+            <a id="media-save-btn" class="btn" download style="display:inline-block; margin-top:12px;" data-key="save_media">Save</a>
         </div>
     </div>
 
@@ -624,7 +647,7 @@
         <button id="group-add-member-btn" class="glass-cta-btn" onclick="openGroupAddMembersModal()" style="display:none;"><i class="fas fa-user-plus"></i> <span data-key="add_user">Добавить пользователя</span></button>
         <div style="font-size:12px;opacity:.8;margin:6px 0;" id="group-members-count">0 участников</div>
         <div id="group-members-list" style="max-height:180px; overflow:auto; margin:10px 0; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:6px;"></div>
-        <button class="btn" onclick="saveGroupInfo()">Сохранить</button>
+        <button class="btn" onclick="saveGroupInfo()" data-key="save">Save</button>
       </div>
     </div>
     <div id="group-add-members-modal" class="modal">
@@ -660,7 +683,7 @@
             <i class="fas fa-bell-slash" id="chat-mute-icon"></i> <span id="chat-mute-label">Выключить уведомления</span>
         </div>
         <div class="ctx-item" id="chat-report-action" onclick="reportSelectedChat()">
-            <i class="fas fa-flag"></i> <span>Пожаловаться</span>
+            <i class="fas fa-flag"></i> <span data-key="report">Report</span>
         </div>
         <div class="ctx-item ctx-delete" onclick="showDeleteChatOptions()">
             <i class="fas fa-trash"></i> <span data-key="delete">Delete Chat</span>
@@ -794,9 +817,9 @@
     </div>
     <div id="account-blocked-screen">
         <div class="blocked-card">
-            <h2 style="margin-bottom:8px;">Аккаунт заблокирован</h2>
-            <p style="opacity:0.85;line-height:1.5;">Вы заблокированы из-за нарушения правил. Обратитесь в поддержку.</p>
-            <button class="btn" style="margin-top:18px;background:#ff4d6d;" onclick="forceLogoutBlocked()">Выйти</button>
+            <h2 style="margin-bottom:8px;" data-key="account_blocked">Account blocked</h2>
+            <p style="opacity:0.85;line-height:1.5;" data-key="account_blocked_desc">You were blocked for violating community rules. Contact support.</p>
+            <button class="btn" style="margin-top:18px;background:#ff4d6d;" onclick="forceLogoutBlocked()" data-key="logout">Logout</button>
         </div>
     </div>
 
@@ -813,7 +836,7 @@
 
         const langData = {
             en: {
-                slogan: "Your that very sweet messenger!", login_btn: "Fly 🚀", chats: "Chats", settings: "Settings", profile: "Profile", theme: "Theme", logout: "Logout", save: "Save Profile",
+                slogan: "Your that very sweet messenger!", login_btn: "Fly 🚀", chats: "Chats", settings: "Settings", profile: "Profile", theme: "Theme", logout: "Logout", save: "Save Profile", report: "Report",
                 delete_me: "Delete for me", delete_all: "Delete for everyone", reply: "Reply", delete: "Delete",
                 new_group: "New Group", new_contact: "New Contact", create_group: "Create Group", create: "Create",
                 search_users: "Search Users", new_chat_title: "New Chat", new_chat_desc: "Write something to start history. Be careful with scammers!",
@@ -839,10 +862,16 @@
                 favorites_cannot_delete: "Favorites cannot be deleted", blocked_you: "You are blocked!",
                 you_blocked_user: "You blocked this user", added_to_group_msg: "You were added to group",
                 only_creator_edit_group: "Only creator can change group name and description",
-                enter_group_name_alert: "Enter group name", creator_changed_group_data: "✏️ Creator changed group details"
+                enter_group_name_alert: "Enter group name", creator_changed_group_data: "✏️ Creator changed group details",
+                search_groups_only: "Search groups and channels only", add_admin: "Add admin", revoke_admin: "Revoke admin",
+                kick_user: "Kick", owner_label: "owner", admin_label: "admin", member_label: "member",
+                kick_confirm: "Are you sure you want to kick this user?", logout_confirm: "Are you sure you want to logout?",
+                yes: "Yes", no: "No", save_media: "Save", account_blocked: "Account blocked",
+                account_blocked_desc: "You were blocked for violating community rules. Contact support.",
+                search_in_chat: "Search in chat...", round_clock_theme: "Round-the-clock Theme", round_clock_on: "Automatic theme enabled", round_clock_off: "Automatic theme disabled"
             },
             ru: {
-                slogan: "Твой тот самый сладкий мессенджер!", login_btn: "Полететь 🚀", chats: "Чаты", settings: "Настройки", profile: "Профиль", theme: "Тема", logout: "Выйти", save: "Сохранить",
+                slogan: "Твой тот самый сладкий мессенджер!", login_btn: "Полететь 🚀", chats: "Чаты", settings: "Настройки", profile: "Профиль", theme: "Тема", logout: "Выйти", save: "Сохранить", report: "Пожаловаться",
                 delete_me: "Удалить у меня", delete_all: "Удалить у всех", reply: "Ответить", delete: "Удалить",
                 new_group: "Создать Группу", new_contact: "Новый Контакт", create_group: "Создать Группу", create: "Создать",
                 search_users: "Поиск Людей", new_chat_title: "Новый чат", new_chat_desc: "Напишите что-то чтоб начать историю. Будьте аккуратнее с мошенниками!",
@@ -868,7 +897,13 @@
                 favorites_cannot_delete: "Избранное нельзя удалить", blocked_you: "Вас заблокировали!",
                 you_blocked_user: "Вы заблокировали пользователя", added_to_group_msg: "Вас добавили в группу",
                 only_creator_edit_group: "Только создатель может менять название и описание",
-                enter_group_name_alert: "Введите название группы", creator_changed_group_data: "✏️ Создатель изменил данные группы"
+                enter_group_name_alert: "Введите название группы", creator_changed_group_data: "✏️ Создатель изменил данные группы",
+                search_groups_only: "Искать только группы и каналы", add_admin: "Dob admin", revoke_admin: "Забрать обратно админку",
+                kick_user: "Выгнать", owner_label: "владелец", admin_label: "админ", member_label: "участник",
+                kick_confirm: "Вы точно хотите выгнать этого пользователя?", logout_confirm: "Вы точно хотите выйти?",
+                yes: "Да", no: "Нет", save_media: "Сохранить", account_blocked: "Аккаунт заблокирован",
+                account_blocked_desc: "Вы заблокированы из-за нарушения правил. Обратитесь в поддержку.",
+                search_in_chat: "Поиск в чате...", round_clock_theme: "Круглосуточная тема", round_clock_on: "Автотема включена", round_clock_off: "Автотема выключена"
             }
         };
 
@@ -919,6 +954,7 @@
         let hasOlderMessages = true;
         let loadingOlderMessages = false;
         let activeMessagesCid = '';
+        let roundClockThemeTimer = null;
         const actionRateMap = {};
 
         window.onload = () => {
@@ -928,8 +964,11 @@
                 setTimeout(() => document.getElementById('splash-screen').classList.add('fade-out'), 1500);
 
                 if(localStorage.getItem('sladkiy_lang')) setLang(localStorage.getItem('sladkiy_lang'));
-                const savedTheme = localStorage.getItem('sladkiy_theme') || 'theme-space';
-                setTheme(savedTheme);
+                if(localStorage.getItem('sladkiy_round_clock_theme') === '1') applyRoundClockTheme(true);
+                else {
+                    const savedTheme = localStorage.getItem('sladkiy_theme') || 'theme-space';
+                    setTheme(savedTheme);
+                }
 
                 document.querySelectorAll('.code-digit').forEach((el, idx, arr) => {
                     el.oninput = () => { if(el.value && idx < 3) arr[idx+1].focus(); };
@@ -978,6 +1017,7 @@
                 document.getElementById('group-name-input').placeholder = "Название группы";
                 document.getElementById('group-title-input').placeholder = langData[lang].group_name;
                 document.getElementById('group-desc-input').placeholder = langData[lang].group_desc;
+                document.getElementById('chat-search-input').placeholder = langData[lang].search_in_chat;
             } else {
                 document.getElementById('nick-input').placeholder = "Nickname (English only)";
                 document.getElementById('msg-input').placeholder = "Message...";
@@ -986,6 +1026,7 @@
                 document.getElementById('group-name-input').placeholder = "Group Name";
                 document.getElementById('group-title-input').placeholder = langData[lang].group_name;
                 document.getElementById('group-desc-input').placeholder = langData[lang].group_desc;
+                document.getElementById('chat-search-input').placeholder = langData[lang].search_in_chat;
             }
             updateChatAccessUI();
             const channelCb = document.getElementById('group-is-channel');
@@ -1041,6 +1082,28 @@
             return !currentChatAccess.blockedByMe && !currentChatAccess.blockedMe;
         }
 
+        function getGroupOwnerId(group) {
+            if(!group) return null;
+            return group.owner || group.admin || null;
+        }
+
+        function getGroupAdminsMap(group) {
+            const map = { ...(group?.admins || {}) };
+            const ownerId = getGroupOwnerId(group);
+            if(ownerId) map[ownerId] = true;
+            if(group?.admin) map[group.admin] = true;
+            return map;
+        }
+
+        function isGroupOwner(group, uid = myId) {
+            return !!uid && getGroupOwnerId(group) === uid;
+        }
+
+        function isGroupAdmin(group, uid = myId) {
+            if(!uid) return false;
+            return !!getGroupAdminsMap(group)[uid];
+        }
+
         function updateArchiveCount() {
             const count = Object.values(chatMetaMap).filter(chat => chat.archived).length;
             const label = document.getElementById('archive-count-label');
@@ -1060,6 +1123,9 @@
             document.getElementById('pinned-bar').classList.remove('active');
             document.getElementById('msg-input').value = '';
             document.getElementById('media-input').value = '';
+            document.getElementById('chat-search-input').value = '';
+            document.getElementById('chat-search-bar').classList.remove('active');
+            document.getElementById('chat-search-toggle').classList.remove('active');
             selectedMedia = [];
             renderMediaPreview();
             document.getElementById('messages-area').onscroll = null;
@@ -1166,7 +1232,38 @@
         }
 
         function setDayNightTheme(mode='night') {
+            localStorage.removeItem('sladkiy_round_clock_theme');
+            if(roundClockThemeTimer) clearInterval(roundClockThemeTimer);
             setTheme(mode === 'day' ? 'theme-light' : 'theme-dark');
+        }
+
+        function getRoundClockThemeByHour(hour = new Date().getHours()) {
+            if(hour >= 4 && hour < 6) return 'theme-sunset';
+            if(hour >= 6 && hour < 20) return 'theme-light';
+            if(hour >= 20 && hour < 22) return 'theme-sunset';
+            return 'theme-dark';
+        }
+
+        function applyRoundClockTheme(skipToast = false) {
+            const selected = getRoundClockThemeByHour();
+            setTheme(selected);
+            localStorage.setItem('sladkiy_round_clock_theme', '1');
+            if(roundClockThemeTimer) clearInterval(roundClockThemeTimer);
+            roundClockThemeTimer = setInterval(() => {
+                setTheme(getRoundClockThemeByHour());
+            }, 60000);
+            if(!skipToast) showToast(langData[currentLang].round_clock_on);
+        }
+
+        function toggleRoundClockTheme() {
+            if(localStorage.getItem('sladkiy_round_clock_theme') === '1') {
+                localStorage.removeItem('sladkiy_round_clock_theme');
+                if(roundClockThemeTimer) clearInterval(roundClockThemeTimer);
+                roundClockThemeTimer = null;
+                showToast(langData[currentLang].round_clock_off);
+                return;
+            }
+            applyRoundClockTheme();
         }
 
         function registerServiceWorker() {
@@ -2084,6 +2181,8 @@
             db.ref(`groups/${gid}`).set({
                 name: name,
                 members: members,
+                owner: myId,
+                admins: { [myId]: true },
                 admin: myId,
                 description: '',
                 onlineCount: 1,
@@ -2151,6 +2250,11 @@
                  const typingRef = db.ref(`groups/${id}/typing`);
                 const groupHandler = s => {
                     const u = s.val(); if(!u) return;
+                    if(!u.members || !u.members[myId]) {
+                        showToast(langData[currentLang].join_denied);
+                        closeChat();
+                        return;
+                    }
                     document.getElementById('room-name').innerText = u.name;
                     const groupAvatar = document.getElementById('room-header-avatar');
                     groupAvatar.style.background = '';
@@ -2399,7 +2503,13 @@
                     }
                     else if(m.kind === 'file') {
                         const safeName = (m.name || 'file').replace(/</g, '&lt;');
-                        content += `<div class="msg-file-list"><div class="msg-file-item"><span class="msg-file-name"><i class="fas fa-file"></i> ${safeName}</span><a class="msg-file-download" href="${m.data}" download="${safeName}" onclick="event.stopPropagation()">${langData[currentLang].download || 'Download'}</a></div></div>`;
+                        const mime = m.mime || '';
+                        const isAudio = mime.startsWith('audio/') || /\\.(mp3|m4a|aac|wav|ogg|flac)$/i.test(safeName);
+                        if(isAudio) {
+                            content += `<div class="msg-voice"><audio controls playsinline preload="metadata" src="${m.data}"></audio><div class="voice-controls"><span><i class="fas fa-music"></i> ${safeName}</span><a class="msg-file-download" href="${m.data}" download="${safeName}" onclick="event.stopPropagation()">${langData[currentLang].download || 'Download'}</a></div></div>`;
+                        } else {
+                            content += `<div class="msg-file-list"><div class="msg-file-item"><span class="msg-file-name"><i class="fas fa-file"></i> ${safeName}</span><a class="msg-file-download" href="${m.data}" download="${safeName}" onclick="event.stopPropagation()">${langData[currentLang].download || 'Download'}</a></div></div>`;
+                        }
                     }
                     else content += `<img src="${m.data}" alt="media" onclick="event.stopPropagation();openMediaViewer('${m.data}','image')">`;
                 });
@@ -2497,7 +2607,7 @@
             const isGroup = currentChatId.startsWith('group_');
             const isFavorites = isFavoritesChat(currentChatId);
             const cid = isFavorites ? getFavoritesMessagePath() : (isGroup ? currentChatId : [myId, currentChatId].sort().join('_'));
-            if(isGroup && currentGroupData?.isChannel && currentGroupData?.admin !== myId && data.type !== 'call_log') {
+            if(isGroup && currentGroupData?.isChannel && !isGroupAdmin(currentGroupData, myId) && data.type !== 'call_log') {
                 showToast(langData[currentLang].channel_readonly);
                 return null;
             }
@@ -2582,17 +2692,18 @@
                 const av = document.getElementById('group-avatar-preview');
                 av.style.backgroundImage = g.avatar ? `url(${g.avatar})` : '';
                 av.innerHTML = g.avatar ? '' : '<i class="fas fa-users"></i>';
-                const canEdit = g.admin === myId;
+                const canEdit = isGroupAdmin(g, myId);
+                const canManageAdmins = isGroupOwner(g, myId);
                 document.getElementById('group-title-input').disabled = !canEdit;
                 document.getElementById('group-desc-input').disabled = !canEdit;
                 document.getElementById('group-add-member-btn').style.display = canEdit ? 'block' : 'none';
-                renderGroupMembers(g);
+                renderGroupMembers(g, canManageAdmins);
                 document.getElementById('group-info-modal').style.display = 'flex';
             });
         }
 
         function openGroupAddMembersModal() {
-            if(!currentGroupData || currentGroupData.admin !== myId) return;
+            if(!currentGroupData || !isGroupAdmin(currentGroupData, myId)) return;
             const wrap = document.getElementById('group-add-members-list');
             wrap.innerHTML = '';
             db.ref(`users/${myId}/chats`).once('value', chatSnap => {
@@ -2638,14 +2749,14 @@
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     unread: 1
                 });
-                showToast('Пользователь добавлен');
+                showToast(langData[currentLang].add_btn);
                 openGroupInfo();
                 openGroupAddMembersModal();
             });
         }
 
         function uploadGroupAvatar(inp) {
-            if(!currentGroupData || currentGroupData.admin !== myId) return;
+            if(!currentGroupData || !isGroupAdmin(currentGroupData, myId)) return;
             const f = inp.files?.[0];
             if(!f) return;
             const r = new FileReader();
@@ -2658,9 +2769,10 @@
             r.readAsDataURL(f);
         }
 
-        function renderGroupMembers(group) {
+        function renderGroupMembers(group, canManageAdmins = isGroupOwner(group, myId)) {
             const wrap = document.getElementById('group-members-list');
             wrap.innerHTML = '';
+            const ownerId = getGroupOwnerId(group);
             Object.keys(group.members || {}).forEach(uid => {
                 db.ref(`users/${uid}`).once('value', s => {
                     const user = s.val() || { nick: uid };
@@ -2668,37 +2780,62 @@
                     row.className = 'user-check-item';
                     row.style.justifyContent = 'space-between';
                     const userStatus = user.online ? langData[currentLang].online : formatLastSeen(user.lastSeen);
+                    const roleLabel = uid === ownerId
+                        ? langData[currentLang].owner_label
+                        : (isGroupAdmin(group, uid) ? langData[currentLang].admin_label : langData[currentLang].member_label);
                     row.innerHTML = `
                         <div class="check-avatar" style="${user.avatar ? `background-image:url(${user.avatar});` : ''}">${user.avatar ? '' : (user.nick || uid)[0]}</div>
                         <div class="member-main">
-                            <span class="member-title">${user.nick}${group.admin === uid ? ' • admin' : ''}</span>
+                            <span class="member-title">${user.nick} • ${roleLabel}</span>
                             <span class="member-subtitle">${userStatus || langData[currentLang].was_online}</span>
                         </div>
                     `;
-                    if(group.admin === myId && uid !== myId) {
-                        const btn = document.createElement('button');
-                        btn.className = 'btn';
-                        btn.style.width = 'auto';
-                        btn.style.padding = '8px 12px';
-                        btn.style.fontSize = '12px';
-                        btn.innerText = langData[currentLang].made_admin;
-                        btn.onclick = () => transferGroupAdmin(uid);
-                        row.appendChild(btn);
+                    const actions = document.createElement('div');
+                    actions.className = 'member-actions';
+                    if(canManageAdmins && uid !== ownerId) {
+                        const isAdminNow = isGroupAdmin(group, uid);
+                        const adminBtn = document.createElement('button');
+                        adminBtn.className = 'member-action-btn';
+                        adminBtn.innerText = isAdminNow ? langData[currentLang].revoke_admin : langData[currentLang].add_admin;
+                        adminBtn.onclick = () => toggleAdditionalAdmin(uid, !isAdminNow);
+                        actions.appendChild(adminBtn);
                     }
+                    const canKick = isGroupAdmin(group, myId) && uid !== ownerId && uid !== myId;
+                    if(canKick) {
+                        const kickBtn = document.createElement('button');
+                        kickBtn.className = 'member-action-btn kick';
+                        kickBtn.innerText = langData[currentLang].kick_user;
+                        kickBtn.onclick = () => kickGroupMember(uid);
+                        actions.appendChild(kickBtn);
+                    }
+                    if(actions.childElementCount) row.appendChild(actions);
                     wrap.appendChild(row);
                 });
             });
         }
 
-        function transferGroupAdmin(uid) {
-            if(!currentGroupData || currentGroupData.admin !== myId) return;
-            db.ref(`groups/${currentGroupData.id}`).update({ admin: uid });
-            sendPayload({ type: 'text', text: `👑 Админ передал права пользователю ${uid}` });
-            document.getElementById('group-info-modal').style.display = 'none';
+        function toggleAdditionalAdmin(uid, makeAdmin) {
+            if(!currentGroupData || !isGroupOwner(currentGroupData, myId)) return;
+            const ownerId = getGroupOwnerId(currentGroupData);
+            if(uid === ownerId) return;
+            const updates = {};
+            updates[`groups/${currentGroupData.id}/admins/${uid}`] = makeAdmin ? true : null;
+            db.ref().update(updates).then(() => openGroupInfo());
+        }
+
+        function kickGroupMember(uid) {
+            if(!currentGroupData?.id || !isGroupAdmin(currentGroupData, myId)) return;
+            const ownerId = getGroupOwnerId(currentGroupData);
+            if(uid === ownerId) return;
+            if(!confirm(langData[currentLang].kick_confirm)) return;
+            db.ref(`groups/${currentGroupData.id}/members/${uid}`).remove();
+            db.ref(`groups/${currentGroupData.id}/admins/${uid}`).remove();
+            db.ref(`users/${uid}/chats/${currentGroupData.id}`).remove();
+            openGroupInfo();
         }
 
         function saveGroupInfo() {
-            if(!currentGroupData || currentGroupData.admin !== myId) return alert(langData[currentLang].only_creator_edit_group);
+            if(!currentGroupData || !isGroupAdmin(currentGroupData, myId)) return alert(langData[currentLang].only_creator_edit_group);
             const name = document.getElementById('group-title-input').value.trim();
             const description = document.getElementById('group-desc-input').value.trim();
             if(!name) return alert(langData[currentLang].enter_group_name_alert);
@@ -2807,8 +2944,31 @@
         }
         function doSearch() {
             const q = document.getElementById('search-input').value.toLowerCase().trim();
+            const groupsOnly = document.getElementById('search-groups-only')?.checked;
             const res = document.getElementById('search-results');
             res.innerHTML = '';
+            if(groupsOnly) {
+                db.ref('groups').once('value', s => {
+                    const matches = [];
+                    s.forEach(snap => {
+                        const g = snap.val() || {};
+                        const gid = snap.key;
+                        const title = (g.name || '').toLowerCase();
+                        if(!title) return;
+                        const score = !q ? 1 : (title.startsWith(q) ? 3 : title.includes(q) ? 2 : 0);
+                        if(score) matches.push({ gid, g, score });
+                    });
+                    matches.sort((a, b) => b.score - a.score || (a.g.name || '').localeCompare(b.g.name || ''));
+                    matches.slice(0, 100).forEach(({ gid, g }) => {
+                        const div = document.createElement('div');
+                        div.className = 'search-result-item';
+                        div.innerHTML = `<div class="search-avatar" style="${g.avatar?`background-image:url(${g.avatar})`:''}">${g.avatar?'':'#'}</div><div><div style="font-weight:bold;">${g.name || gid}</div><div style="font-size:12px;opacity:.72;">${g.isChannel ? langData[currentLang].channel_type : langData[currentLang].group_type}</div></div>`;
+                        div.onclick = () => { document.getElementById('search-modal').style.display = 'none'; openChat(gid); };
+                        res.appendChild(div);
+                    });
+                });
+                return;
+            }
             db.ref('users').once('value', s => {
                 const matches = [];
                 s.forEach(snap => {
@@ -2823,11 +2983,37 @@
                 matches.slice(0, 100).forEach(({ uid, u }) => {
                     const div = document.createElement('div');
                     div.className = 'search-result-item';
-                    div.innerHTML = `<div class="search-avatar" style="${u.avatar?`background-image:url(${u.avatar})`:''}">${u.avatar?'':u.nick[0]}</div><div><div style="font-weight:bold;">${u.nick}</div><div style="font-size:12px;opacity:.72;">${u.bio || 'Открыть профиль'}</div></div>`;
+                    div.innerHTML = `<div class="search-avatar" style="${u.avatar?`background-image:url(${u.avatar})`:''}">${u.avatar?'':u.nick[0]}</div><div><div style="font-weight:bold;">${u.nick}</div><div style="font-size:12px;opacity:.72;">${u.bio || 'Open profile'}</div></div>`;
                     div.onclick = () => openUserPreview(uid, u);
                     res.appendChild(div);
                 });
             });
+        }
+
+        function toggleChatSearch(ev) {
+            ev?.stopPropagation?.();
+            const bar = document.getElementById('chat-search-bar');
+            const btn = document.getElementById('chat-search-toggle');
+            const active = bar.classList.toggle('active');
+            btn.classList.toggle('active', active);
+            if(active) {
+                document.getElementById('chat-search-input').focus();
+            } else {
+                document.getElementById('chat-search-input').value = '';
+                runChatSearch();
+            }
+        }
+
+        function runChatSearch() {
+            const q = (document.getElementById('chat-search-input')?.value || '').toLowerCase().trim();
+            const msgs = Array.from(document.querySelectorAll('#messages-area .msg'));
+            msgs.forEach(el => el.classList.remove('search-hit'));
+            if(!q) return;
+            const found = msgs.find(el => (el.innerText || '').toLowerCase().includes(q));
+            if(found) {
+                found.classList.add('search-hit');
+                found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
         // --- NEW FUNCTION: Open Profile from Chat Header ---
@@ -3171,7 +3357,12 @@
             if(history.state?.view === 'chat') history.back();
         }
 
-        function logout() { localStorage.removeItem('sladkiy_session_user'); localStorage.removeItem('sladkiy_trusted_' + myId); location.reload(); }
+        function logout() {
+            if(!confirm(langData[currentLang].logout_confirm)) return;
+            localStorage.removeItem('sladkiy_session_user');
+            localStorage.removeItem('sladkiy_trusted_' + myId);
+            location.reload();
+        }
         function saveProfile() { db.ref(`users/${myId}`).update({bio:document.getElementById('edit-bio').value}); alert(langData[currentLang].save_done); }
         function uploadAvatar(inp) { const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload=e=>{ myAvatar=e.target.result; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:myAvatar}); }; r.readAsDataURL(f); }
         function removeAvatar() { myAvatar=''; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:''}); }
