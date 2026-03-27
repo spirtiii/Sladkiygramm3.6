@@ -334,8 +334,15 @@
         .header-action-btn.active { background: #ff3b4f; border-color: #ff5f70; color:#fff; box-shadow:0 0 0 2px rgba(255,59,79,0.25); }
         .chat-search-bar { display:none; align-items:center; gap:8px; margin: 8px 10px 0; padding: 8px; border-radius: 14px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); }
         .chat-search-bar.active { display:flex; }
-        .chat-search-bar input { margin:0; border:none; background: rgba(0,0,0,0.18); }
+        .chat-search-bar input { margin:0; border:none; background: rgba(0,0,0,0.18); flex:1; }
+        .chat-search-next-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.28); background: linear-gradient(135deg, rgba(255,255,255,0.24), rgba(255,255,255,0.09)); color: var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform 0.18s ease, background 0.25s ease, box-shadow 0.2s ease; box-shadow: 0 8px 18px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.25); backdrop-filter: blur(15px) saturate(160%); -webkit-backdrop-filter: blur(15px) saturate(160%); }
+        .chat-search-next-btn:active { transform: scale(0.88); background: linear-gradient(135deg, rgba(255, 104, 156, 0.95), rgba(255, 73, 132, 0.8)); color: #fff; box-shadow: 0 0 0 5px rgba(255, 88, 150, 0.24), 0 10px 22px rgba(255, 83, 140, 0.35); }
+        .chat-search-next-btn.bubble-anim { animation: bubbleBounce 0.22s ease; }
+        @keyframes bubbleBounce { 0% { transform: scale(1); } 45% { transform: scale(0.83); } 100% { transform: scale(1.02); } }
         .msg.search-hit { outline: 2px solid #ff6b7e; box-shadow: 0 0 0 2px rgba(255,107,126,0.25); }
+        .search-filter-card { display:flex; align-items:center; gap:10px; font-size:13px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:11px 12px; cursor:pointer; background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.05)); backdrop-filter: blur(16px) saturate(165%); -webkit-backdrop-filter: blur(16px) saturate(165%); box-shadow: 0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18); }
+        .search-filter-card .selection-box { width: 24px; height: 24px; border-radius: 8px; }
+        .search-filter-card.active { border-color: rgba(255,255,255,0.45); box-shadow: 0 0 0 2px rgba(217,70,239,0.25), 0 12px 26px rgba(0,0,0,0.22); }
         .member-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
         .member-action-btn { border:none; border-radius:10px; padding:6px 9px; font-size:11px; cursor:pointer; color:#fff; background: rgba(255,255,255,0.18); }
         .member-action-btn.kick { background:#ff4d6d; }
@@ -470,10 +477,6 @@
                 <div class="lang-btn" onclick="setLang('ru')" id="set-ru">Русский</div>
             </div>
             <h3 style="margin-top: 25px; margin-bottom: 10px;" data-key="theme">Theme</h3>
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <button class="btn" style="padding:10px 12px;" onclick="setDayNightTheme('day')" data-key="day_theme">Day Theme</button>
-                <button class="btn" style="padding:10px 12px;" onclick="setDayNightTheme('night')" data-key="night_theme">Night Theme</button>
-            </div>
             <button class="btn" style="padding:10px 12px; margin-bottom:10px;" onclick="toggleRoundClockTheme()" data-key="round_clock_theme">Round-the-clock Theme</button>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div onclick="setTheme('theme-space')" id="theme-space" class="btn" style="background:#302b63;">Space</div>
@@ -504,6 +507,7 @@
         </div>
         <div id="chat-search-bar" class="chat-search-bar">
             <input id="chat-search-input" type="text" placeholder="Search in chat..." oninput="runChatSearch()">
+            <button class="chat-search-next-btn" id="chat-search-next-btn" onclick="goToNextChatSearchHit(event)" aria-label="Next result"><i class="fas fa-arrow-right"></i></button>
         </div>
         <!-- PINNED BAR -->
         <div id="pinned-bar" class="pinned-bar" onclick="openPinnedList()">
@@ -568,8 +572,9 @@
         <div class="modal-content glass-panel" style="height: 400px; display:flex; flex-direction:column;">
             <span class="close-modal" onclick="document.getElementById('search-modal').style.display='none'">&times;</span>
             <h3 data-key="search_users" style="margin-bottom:10px;">Search Users</h3>
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;opacity:.9;margin-bottom:10px;">
-                <input type="checkbox" id="search-groups-only" onchange="doSearch()">
+            <label class="search-filter-card" id="search-groups-card" onclick="toggleSearchGroupsOnly(event)">
+                <input type="checkbox" id="search-groups-only" onchange="onSearchGroupsOnlyChanged()" hidden>
+                <div class="selection-box"><i class="fas fa-check"></i></div>
                 <span data-key="search_groups_only">Search groups and channels only</span>
             </label>
             <input type="text" id="search-input" placeholder="Type letters..." oninput="doSearch()">
@@ -868,7 +873,7 @@
                 kick_confirm: "Are you sure you want to kick this user?", logout_confirm: "Are you sure you want to logout?",
                 yes: "Yes", no: "No", save_media: "Save", account_blocked: "Account blocked",
                 account_blocked_desc: "You were blocked for violating community rules. Contact support.",
-                search_in_chat: "Search in chat...", round_clock_theme: "Round-the-clock Theme", round_clock_on: "Automatic theme enabled", round_clock_off: "Automatic theme disabled"
+                search_in_chat: "Search in chat...", round_clock_theme: "Round-the-clock Theme", round_clock_on: "24/7 auto theme: 04-06 Sunset, 06-20 Light, 20-22 Sunset, 22-04 Dark", round_clock_off: "Automatic theme disabled"
             },
             ru: {
                 slogan: "Твой тот самый сладкий мессенджер!", login_btn: "Полететь 🚀", chats: "Чаты", settings: "Настройки", profile: "Профиль", theme: "Тема", logout: "Выйти", save: "Сохранить", report: "Пожаловаться",
@@ -903,7 +908,7 @@
                 kick_confirm: "Вы точно хотите выгнать этого пользователя?", logout_confirm: "Вы точно хотите выйти?",
                 yes: "Да", no: "Нет", save_media: "Сохранить", account_blocked: "Аккаунт заблокирован",
                 account_blocked_desc: "Вы заблокированы из-за нарушения правил. Обратитесь в поддержку.",
-                search_in_chat: "Поиск в чате...", round_clock_theme: "Круглосуточная тема", round_clock_on: "Автотема включена", round_clock_off: "Автотема выключена"
+                search_in_chat: "Поиск в чате...", round_clock_theme: "Круглосуточная тема", round_clock_on: "Автотема 24/7: 04-06 Закат, 06-20 Светлая, 20-22 Закат, 22-04 Тёмная", round_clock_off: "Автотема выключена"
             }
         };
 
@@ -956,6 +961,8 @@
         let activeMessagesCid = '';
         let roundClockThemeTimer = null;
         const actionRateMap = {};
+        let chatSearchMatches = [];
+        let chatSearchIndex = -1;
 
         window.onload = () => {
             try {
@@ -1029,10 +1036,32 @@
                 document.getElementById('chat-search-input').placeholder = langData[lang].search_in_chat;
             }
             updateChatAccessUI();
+            syncSearchGroupsOnlyCard();
             const channelCb = document.getElementById('group-is-channel');
             if(channelCb) updateChannelToggleVisual(channelCb.checked);
             if(currentGroupData && document.getElementById('group-info-modal').style.display === 'flex') renderGroupMembers(currentGroupData);
             updateArchiveCount();
+        }
+
+        function syncSearchGroupsOnlyCard() {
+            const cb = document.getElementById('search-groups-only');
+            const card = document.getElementById('search-groups-card');
+            if(!cb || !card) return;
+            card.classList.toggle('active', !!cb.checked);
+        }
+
+        function toggleSearchGroupsOnly(ev) {
+            ev?.preventDefault?.();
+            ev?.stopPropagation?.();
+            const cb = document.getElementById('search-groups-only');
+            if(!cb) return;
+            cb.checked = !cb.checked;
+            onSearchGroupsOnlyChanged();
+        }
+
+        function onSearchGroupsOnlyChanged() {
+            syncSearchGroupsOnlyCard();
+            doSearch();
         }
 
         function formatLastSeen(ts) {
@@ -1126,6 +1155,8 @@
             document.getElementById('chat-search-input').value = '';
             document.getElementById('chat-search-bar').classList.remove('active');
             document.getElementById('chat-search-toggle').classList.remove('active');
+            chatSearchMatches = [];
+            chatSearchIndex = -1;
             selectedMedia = [];
             renderMediaPreview();
             document.getElementById('messages-area').onscroll = null;
@@ -1882,7 +1913,30 @@
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-screen').classList.add('active');
             loadChats();
+            cleanupTestGroups();
             processJoinInviteFromUrl();
+        }
+
+        function cleanupTestGroups() {
+            db.ref('groups').once('value', snap => {
+                const rootUpdates = {};
+                const usersUpdates = {};
+                snap.forEach(groupSnap => {
+                    const g = groupSnap.val() || {};
+                    const title = (g.name || '').trim().toLowerCase();
+                    if(title !== 'test') return;
+                    const gid = groupSnap.key;
+                    rootUpdates[`groups/${gid}`] = null;
+                    rootUpdates[`messages/${gid}`] = null;
+                    if(g.members) {
+                        Object.keys(g.members).forEach(uid => {
+                            usersUpdates[`users/${uid}/chats/${gid}`] = null;
+                        });
+                    }
+                });
+                const updates = { ...rootUpdates, ...usersUpdates };
+                if(Object.keys(updates).length) db.ref().update(updates);
+            });
         }
 
         function setupConnectionEvents(conn) {
@@ -2939,6 +2993,7 @@
 
             document.getElementById('fab-menu').classList.remove('active');
             document.getElementById('search-modal').style.display = 'flex';
+            syncSearchGroupsOnlyCard();
             document.getElementById('search-input').focus();
             doSearch();
         }
@@ -2954,7 +3009,7 @@
                         const g = snap.val() || {};
                         const gid = snap.key;
                         const title = (g.name || '').toLowerCase();
-                        if(!title) return;
+                        if(!title || title.trim() === 'test') return;
                         const score = !q ? 1 : (title.startsWith(q) ? 3 : title.includes(q) ? 2 : 0);
                         if(score) matches.push({ gid, g, score });
                     });
@@ -3000,6 +3055,8 @@
                 document.getElementById('chat-search-input').focus();
             } else {
                 document.getElementById('chat-search-input').value = '';
+                chatSearchMatches = [];
+                chatSearchIndex = -1;
                 runChatSearch();
             }
         }
@@ -3008,12 +3065,42 @@
             const q = (document.getElementById('chat-search-input')?.value || '').toLowerCase().trim();
             const msgs = Array.from(document.querySelectorAll('#messages-area .msg'));
             msgs.forEach(el => el.classList.remove('search-hit'));
-            if(!q) return;
-            const found = msgs.find(el => (el.innerText || '').toLowerCase().includes(q));
-            if(found) {
-                found.classList.add('search-hit');
-                found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if(!q) {
+                chatSearchMatches = [];
+                chatSearchIndex = -1;
+                return;
             }
+            chatSearchMatches = msgs.filter(el => (el.innerText || '').toLowerCase().includes(q));
+            if(!chatSearchMatches.length) {
+                chatSearchIndex = -1;
+                return;
+            }
+            chatSearchIndex = 0;
+            focusChatSearchHit(chatSearchIndex, true);
+        }
+
+        function focusChatSearchHit(idx, smooth = false) {
+            if(!chatSearchMatches.length) return;
+            chatSearchMatches.forEach(el => el.classList.remove('search-hit'));
+            const target = chatSearchMatches[idx];
+            if(!target) return;
+            target.classList.add('search-hit');
+            target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+        }
+
+        function goToNextChatSearchHit(ev) {
+            ev?.stopPropagation?.();
+            const btn = document.getElementById('chat-search-next-btn');
+            if(!btn) return;
+            btn.classList.remove('bubble-anim');
+            void btn.offsetWidth;
+            btn.classList.add('bubble-anim');
+            const q = (document.getElementById('chat-search-input')?.value || '').toLowerCase().trim();
+            if(!q) return;
+            if(!chatSearchMatches.length) runChatSearch();
+            if(!chatSearchMatches.length) return;
+            chatSearchIndex = (chatSearchIndex + 1) % chatSearchMatches.length;
+            focusChatSearchHit(chatSearchIndex, true);
         }
 
         // --- NEW FUNCTION: Open Profile from Chat Header ---
