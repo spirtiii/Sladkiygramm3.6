@@ -42,8 +42,16 @@
         @keyframes spinCandy { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.15); } 100% { transform: rotate(360deg) scale(1); } }
 
         /* HEADER */
-        .header { height: 60px; display: flex; align-items: center; padding: 0 15px; justify-content: space-between; z-index: 20; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .header { min-height: 60px; display: flex; align-items: center; padding: 8px 15px; justify-content: space-between; z-index: 20; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px; }
         .header-title { font-size: 18px; font-weight: 700; }
+        .header-subtitle { font-size: 11px; opacity: 0.72; margin-top: 2px; }
+        .liquid-weather { min-width: 130px; border-radius: 14px; padding: 7px 10px; border: 1px solid rgba(255,255,255,0.2); background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04)); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%); box-shadow: 0 10px 24px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.14); animation: weatherPop 0.55s ease; }
+        .weather-row { display:flex; align-items:center; gap:7px; font-size: 11px; }
+        .weather-icon { width: 24px; text-align: center; animation: weatherSpin 6s linear infinite; transform-origin:center; }
+        .weather-temp { font-weight: 700; font-size: 13px; }
+        .weather-desc { font-size: 10px; opacity: 0.8; margin-top: 2px; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; }
+        @keyframes weatherSpin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+        @keyframes weatherPop { from { opacity:0; transform: translateY(-8px) scale(0.96);} to { opacity:1; transform: translateY(0) scale(1);} }
 
         /* BUTTONS & INPUTS */
         .btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 16px; width: 100%; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: block; text-align: center; }
@@ -69,7 +77,8 @@
         /* CHATS LIST */
         .chat-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
         .chat-list.archive-list { padding-bottom: 100px; }
-        .chat-item { display: flex; align-items: center; padding: 14px; border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative; width: 100%; box-sizing: border-box; flex-shrink: 0; min-height: 72px; border-left: 4px solid transparent; }
+        .chat-item { display: flex; align-items: center; padding: 14px; border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative; width: 100%; box-sizing: border-box; flex-shrink: 0; min-height: 72px; border-left: 4px solid transparent; animation: chatReveal .35s ease both; }
+        @keyframes chatReveal { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1);} }
         .chat-item:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
         .chat-item.unread-glow { border-left: 4px solid #00e676; background: linear-gradient(90deg, rgba(0,230,118,0.1), transparent); box-shadow: 0 0 15px rgba(0,230,118,0.2); }
         .chat-item.pinned { border: 1px solid var(--primary); background: rgba(255,255,255,0.08); order: -1 !important; }
@@ -88,7 +97,8 @@
 
         /* MESSAGES */
         .messages-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; padding-bottom: 90px; }
-        .msg { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 15px; position: relative; word-wrap: break-word; line-height: 1.4; animation: msgPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom; cursor: pointer; user-select: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.4s ease; }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 15px; position: relative; word-wrap: break-word; line-height: 1.4; animation: msgPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom; cursor: pointer; user-select: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.4s ease; touch-action: pan-y; }
+        .msg.swipe-active { box-shadow: 0 0 0 2px rgba(0,230,118,0.35), 0 8px 20px rgba(0,0,0,0.2); }
         @keyframes msgPop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .msg.msg-delete-anim { opacity: 0; transform: scale(0.5); margin-bottom: -40px; }
@@ -135,7 +145,7 @@
         .unpin-btn { color: #ff4444; padding: 8px; cursor: pointer; }
 
         /* REPLIES */
-        .msg-reply-content { border-left: 3px solid var(--primary); margin-bottom: 6px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 6px 8px; font-size: 12px; display: flex; flex-direction: column; backdrop-filter: blur(5px); }
+        .msg-reply-content { border-left: 3px solid var(--primary); margin-bottom: 6px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 6px 8px; font-size: 12px; display: flex; flex-direction: column; backdrop-filter: blur(5px); cursor:pointer; }
         .msg-reply-name { color: var(--primary); font-weight: bold; margin-bottom: 2px; font-size: 11px; }
         .msg-reply-text { opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -262,8 +272,8 @@
         .legal-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--text); }
 
         .bottom-nav { height: 75px; background: var(--nav-bg); backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); z-index: 100; padding-bottom: 5px; }
-        .nav-item { color: var(--text-sec); font-size: 24px; cursor: pointer; padding: 12px; transition: 0.2s; }
-        .nav-item.active { color: var(--primary); transform: translateY(-4px); text-shadow: 0 0 10px var(--primary); }
+        .nav-item { color: var(--text-sec); font-size: 24px; cursor: pointer; padding: 12px; transition: 0.28s; border-radius: 16px; position: relative; }
+        .nav-item.active { color: var(--primary); transform: translateY(-4px); text-shadow: 0 0 10px var(--primary); background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.07)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 16px rgba(0,0,0,0.22); }
         .archive-tab { margin: 0 15px 10px; border-radius: 20px; padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; font-weight:700; color: var(--text); }
         .archive-tab small { opacity: 0.72; font-weight:600; }
 
@@ -323,13 +333,15 @@
         .member-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .member-subtitle { font-size: 11px; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .check-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--primary); margin-right: 2px; display: flex; align-items: center; justify-content: center; font-size: 12px; overflow: hidden; background-size: cover; background-position: center; }
-        .selection-box { width: 22px; height: 22px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s; background: rgba(0,0,0,0.15); }
+        .selection-box { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s; background: transparent; }
         .selection-box i { font-size: 11px; opacity: 0; transform: scale(0.7); transition: 0.2s; }
         .user-check-item.selected { border-color: var(--primary); box-shadow: 0 0 0 1px rgba(217,70,239,0.25); background: rgba(217,70,239,0.12); }
-        .user-check-item.selected .selection-box { background: var(--primary); border-color: var(--primary); }
+        .user-check-item.selected .selection-box { background: #00c853; border-color: #00c853; box-shadow: 0 0 0 4px rgba(0,200,83,0.24); }
         .user-check-item.selected .selection-box i { opacity: 1; transform: scale(1); }
         .channel-toggle-card { display:flex; align-items:center; justify-content:space-between; padding: 10px 12px; border-radius: 12px; border:1px solid rgba(255,255,255,0.14); margin-top:8px; margin-bottom:8px; cursor:pointer; background: rgba(255,255,255,0.04); }
         .channel-toggle-card.active { border-color: var(--primary); background: rgba(217,70,239,0.13); }
+        .channel-toggle-card.active .selection-box { background:#00c853; border-color:#00c853; box-shadow: 0 0 0 4px rgba(0,200,83,0.24); }
+        .channel-toggle-card.active .selection-box i { opacity:1; transform: scale(1); }
         .header-action-btn { width: 36px; height: 36px; border-radius: 10px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.08); cursor:pointer; transition:0.2s; }
         .header-action-btn.active { background: #ff3b4f; border-color: #ff5f70; color:#fff; box-shadow:0 0 0 2px rgba(255,59,79,0.25); }
         .chat-search-bar { display:none; align-items:center; gap:8px; margin: 8px 10px 0; padding: 8px; border-radius: 14px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); }
@@ -342,7 +354,7 @@
         .msg.search-hit { outline: 2px solid #ff6b7e; box-shadow: 0 0 0 2px rgba(255,107,126,0.25); }
         .search-filter-card { display:flex; align-items:center; gap:10px; font-size:13px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:11px 12px; cursor:pointer; background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.05)); backdrop-filter: blur(16px) saturate(165%); -webkit-backdrop-filter: blur(16px) saturate(165%); box-shadow: 0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18); }
         .search-filter-card .selection-box { width: 24px; height: 24px; border-radius: 8px; }
-        .search-filter-card.active { border-color: rgba(255,255,255,0.45); box-shadow: 0 0 0 2px rgba(217,70,239,0.25), 0 12px 26px rgba(0,0,0,0.22); }
+        .search-filter-card.active { border-color: rgba(76,255,143,0.8); box-shadow: 0 0 0 2px rgba(0,200,83,0.25), 0 12px 26px rgba(0,0,0,0.22); }
         .member-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
         .member-action-btn { border:none; border-radius:10px; padding:6px 9px; font-size:11px; cursor:pointer; color:#fff; background: rgba(255,255,255,0.18); }
         .member-action-btn.kick { background:#ff4d6d; }
@@ -403,7 +415,16 @@
 
     <!-- MAIN SCREEN -->
     <div id="main-screen" class="screen">
-        <div class="header glass-panel"><div class="header-title">Sladkiygramm</div></div>
+        <div class="header glass-panel">
+            <div>
+                <div class="header-title">Sladkiygramm</div>
+                <div class="header-subtitle" id="header-my-nick">@user</div>
+            </div>
+            <div class="liquid-weather" id="weather-card">
+                <div class="weather-row"><span class="weather-icon" id="weather-icon">☁️</span><span class="weather-temp" id="weather-temp">--°C</span></div>
+                <div class="weather-desc" id="weather-greeting">...</div>
+            </div>
+        </div>
         <div class="chat-list" id="chats-container"></div>
         <div class="archive-tab glass-panel" onclick="openArchiveScreen()">
             <span><i class="fas fa-box-archive"></i> <span data-key="archive">Archive</span></span>
@@ -477,8 +498,8 @@
                 <div class="lang-btn" onclick="setLang('ru')" id="set-ru">Русский</div>
             </div>
             <h3 style="margin-top: 25px; margin-bottom: 10px;" data-key="theme">Theme</h3>
-            <button class="btn" style="padding:10px 12px; margin-bottom:10px;" onclick="toggleRoundClockTheme()" data-key="round_clock_theme">Round-the-clock Theme</button>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button class="btn" id="theme-auto-btn" style="padding:10px 12px; margin-bottom:10px;" onclick="toggleRoundClockTheme()" data-key="round_clock_theme">Round-the-clock Theme</button>
+            <div id="manual-theme-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div onclick="setTheme('theme-space')" id="theme-space" class="btn" style="background:#302b63;">Space</div>
                 <div onclick="setTheme('theme-sunset')" id="theme-sunset" class="btn" style="background:#ff5e62;">Sunset</div>
                 <div onclick="setTheme('theme-dark')" id="theme-dark" class="btn" style="background:#232526;">Dark</div>
@@ -963,6 +984,13 @@
         const actionRateMap = {};
         let chatSearchMatches = [];
         let chatSearchIndex = -1;
+        let greetingTimer = null;
+        const WEATHER_CODE_MAP = {
+            0: { icon: '☀️', ru: 'Ясно', en: 'Clear' }, 1: { icon: '🌤️', ru: 'Солнечно', en: 'Sunny' }, 2: { icon: '⛅', ru: 'Переменная облачность', en: 'Partly cloudy' }, 3: { icon: '☁️', ru: 'Облачно', en: 'Cloudy' },
+            45: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 48: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 51: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 53: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 55: { icon: '🌧️', ru: 'Сильная морось', en: 'Heavy drizzle' },
+            61: { icon: '🌧️', ru: 'Дождь', en: 'Rain' }, 63: { icon: '🌧️', ru: 'Дождь', en: 'Rain' }, 65: { icon: '🌧️', ru: 'Ливень', en: 'Heavy rain' }, 71: { icon: '🌨️', ru: 'Снег', en: 'Snow' }, 80: { icon: '🌦️', ru: 'Ливневый дождь', en: 'Rain showers' },
+            95: { icon: '⛈️', ru: 'Гроза', en: 'Thunderstorm' }
+        };
 
         window.onload = () => {
             try {
@@ -976,6 +1004,7 @@
                     const savedTheme = localStorage.getItem('sladkiy_theme') || 'theme-space';
                     setTheme(savedTheme);
                 }
+                updateThemeControls();
 
                 document.querySelectorAll('.code-digit').forEach((el, idx, arr) => {
                     el.oninput = () => { if(el.value && idx < 3) arr[idx+1].focus(); };
@@ -1041,6 +1070,8 @@
             if(channelCb) updateChannelToggleVisual(channelCb.checked);
             if(currentGroupData && document.getElementById('group-info-modal').style.display === 'flex') renderGroupMembers(currentGroupData);
             updateArchiveCount();
+            initWeather();
+            updateThemeControls();
         }
 
         function syncSearchGroupsOnlyCard() {
@@ -1253,13 +1284,19 @@
             location.reload();
         }
 
-        function setTheme(t) {
+        function setTheme(t, fromAuto = false) {
             document.body.className = t;
             localStorage.setItem('sladkiy_theme', t);
+            if(!fromAuto && localStorage.getItem('sladkiy_round_clock_theme') === '1') {
+                localStorage.removeItem('sladkiy_round_clock_theme');
+                if(roundClockThemeTimer) clearInterval(roundClockThemeTimer);
+                roundClockThemeTimer = null;
+            }
             ['theme-space','theme-sunset','theme-dark','theme-light'].forEach(theme => {
                 document.getElementById(theme).classList.remove('selected-border');
             });
             document.getElementById(t).classList.add('selected-border');
+            updateThemeControls();
         }
 
         function setDayNightTheme(mode='night') {
@@ -1277,11 +1314,12 @@
 
         function applyRoundClockTheme(skipToast = false) {
             const selected = getRoundClockThemeByHour();
-            setTheme(selected);
+            setTheme(selected, true);
             localStorage.setItem('sladkiy_round_clock_theme', '1');
+            updateThemeControls();
             if(roundClockThemeTimer) clearInterval(roundClockThemeTimer);
             roundClockThemeTimer = setInterval(() => {
-                setTheme(getRoundClockThemeByHour());
+                setTheme(getRoundClockThemeByHour(), true);
             }, 60000);
             if(!skipToast) showToast(langData[currentLang].round_clock_on);
         }
@@ -1291,10 +1329,86 @@
                 localStorage.removeItem('sladkiy_round_clock_theme');
                 if(roundClockThemeTimer) clearInterval(roundClockThemeTimer);
                 roundClockThemeTimer = null;
+                updateThemeControls();
                 showToast(langData[currentLang].round_clock_off);
                 return;
             }
             applyRoundClockTheme();
+        }
+
+        function updateThemeControls() {
+            const isAuto = localStorage.getItem('sladkiy_round_clock_theme') === '1';
+            const btn = document.getElementById('theme-auto-btn');
+            const grid = document.getElementById('manual-theme-grid');
+            if(btn) {
+                btn.classList.toggle('selected-border', isAuto);
+                btn.style.color = document.body.classList.contains('theme-light') ? '#111' : '#fff';
+            }
+            if(grid) grid.style.display = isAuto ? 'none' : 'grid';
+        }
+
+        function getGreetingText() {
+            const h = new Date().getHours();
+            if(h >= 4 && h < 12) return currentLang === 'ru' ? 'Доброе утро' : 'Good morning';
+            if(h >= 12 && h < 20) return currentLang === 'ru' ? 'Добрый день' : 'Good afternoon';
+            if(h >= 20 && h < 22) return currentLang === 'ru' ? 'Добрый вечер' : 'Good evening';
+            return currentLang === 'ru' ? 'Доброй ночи' : 'Good night';
+        }
+
+        function updateHeaderNick() {
+            const nickEl = document.getElementById('header-my-nick');
+            if(nickEl) nickEl.innerText = myNick || '@user';
+        }
+
+        function updateWeatherCard(payload = null) {
+            const w = payload || { icon: '☁️', temp: '--', text: currentLang === 'ru' ? 'Погода недоступна' : 'Weather unavailable' };
+            const icon = document.getElementById('weather-icon');
+            const temp = document.getElementById('weather-temp');
+            const greeting = document.getElementById('weather-greeting');
+            if(icon) icon.innerText = w.icon;
+            if(temp) temp.innerText = `${w.temp}°C`;
+            if(greeting) greeting.innerText = `${getGreetingText()} • ${w.text}`;
+        }
+
+        function initWeather() {
+            updateWeatherCard();
+            if(greetingTimer) clearInterval(greetingTimer);
+            greetingTimer = setInterval(() => updateWeatherCard({ icon: document.getElementById('weather-icon')?.innerText || '☁️', temp: (document.getElementById('weather-temp')?.innerText || '--').replace('°C',''), text: (document.getElementById('weather-greeting')?.innerText || '').split('•')[1]?.trim() || (currentLang==='ru'?'Погода':'Weather') }), 60000);
+            if(!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(async pos => {
+                try {
+                    const { latitude, longitude } = pos.coords;
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`;
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+                    const current = data?.current || {};
+                    const map = WEATHER_CODE_MAP[current.weather_code] || { icon: '🌤️', ru: 'Погода', en: 'Weather' };
+                    updateWeatherCard({ icon: map.icon, temp: Math.round(current.temperature_2m ?? 0), text: currentLang === 'ru' ? map.ru : map.en });
+                } catch(e) { updateWeatherCard(); }
+            }, () => updateWeatherCard());
+        }
+
+        function getChatCryptoKey() {
+            return btoa(unescape(encodeURIComponent(`${currentChatId || 'chat'}:${myId || 'u'}`))).slice(0, 24);
+        }
+
+        function encryptMessageText(text = '') {
+            if(!text) return text;
+            const key = getChatCryptoKey();
+            let out = '';
+            for(let i = 0; i < text.length; i++) out += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            return `enc:${btoa(unescape(encodeURIComponent(out)))}`;
+        }
+
+        function decryptMessageText(text = '') {
+            if(typeof text !== 'string' || !text.startsWith('enc:')) return text;
+            try {
+                const raw = decodeURIComponent(escape(atob(text.slice(4))));
+                const key = getChatCryptoKey();
+                let out = '';
+                for(let i = 0; i < raw.length; i++) out += String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                return out;
+            } catch(e) { return text; }
         }
 
         function registerServiceWorker() {
@@ -1889,6 +2003,7 @@
                 document.getElementById('edit-bio').value = val.bio || '';
                 document.getElementById('my-secret-code').innerText = val.loginCode || '----';
                 updateProfileUI();
+                updateHeaderNick();
             });
             peer = new Peer(myId);
             peer.on('call', call => {
@@ -1915,6 +2030,8 @@
             loadChats();
             cleanupTestGroups();
             processJoinInviteFromUrl();
+            updateHeaderNick();
+            initWeather();
         }
 
         function cleanupTestGroups() {
@@ -2005,6 +2122,7 @@
             el.id = `chat-${c.id}-${c.archived ? 'archive' : 'main'}`;
             el.dataset.chatId = c.id;
             el.dataset.timestamp = c.timestamp || 0;
+            el.style.animationDelay = `${Math.min(container.children.length, 12) * 35}ms`;
             el.onclick = () => openChat(c.id);
             el.oncontextmenu = (e) => { e.preventDefault(); showChatContext(e, c.id); }
             let timer;
@@ -2453,7 +2571,7 @@
                 if(msg.from !== myId && msg.status !== 'read') {
                     db.ref(`messages/${cid}/${s.key}`).update({ status: 'read' });
                     if(msg.type === 'call_invite') showLocalNotification(msg.fromNick || 'Incoming call', 'is calling you', id);
-                    else if(msg.type === 'text' || msg.type === 'media') showLocalNotification(msg.fromNick || 'New message', msg.text || 'Media message', id);
+                    else if(msg.type === 'text' || msg.type === 'media') showLocalNotification(msg.fromNick || 'New message', decryptMessageText(msg.text || '') || 'Media message', id);
                 }
             });
             trackChatListener(messagesRef, 'child_removed', s => {
@@ -2539,9 +2657,11 @@
             }
 
             bindMessageHoldMenu(div, key, msg);
+            bindMessageSwipeReply(div, key, msg);
 
             let content = '';
-            if(msg.replyTo) content += `<div class="msg-reply-content"><div class="msg-reply-name">${msg.replyTo.nick}</div><div class="msg-reply-text">${msg.replyTo.text}</div></div>`;
+            const shownText = decryptMessageText(msg.text || '');
+            if(msg.replyTo) content += `<div class="msg-reply-content" onclick="jumpToMessage('${msg.replyTo.id || ''}')"><div class="msg-reply-name">${msg.replyTo.nick}</div><div class="msg-reply-text">${decryptMessageText(msg.replyTo.text || '')}</div></div>`;
             if(msg.type === 'gift') {
                 const gKey = 'gift_' + msg.giftType;
                 const label = langData[currentLang][gKey] || msg.giftLabel;
@@ -2568,11 +2688,11 @@
                     else content += `<img src="${m.data}" alt="media" onclick="event.stopPropagation();openMediaViewer('${m.data}','image')">`;
                 });
                 content += `</div>`;
-                if(msg.text) content += `<div>${msg.text}</div>`;
+                if(shownText) content += `<div>${shownText}</div>`;
             } else if(msg.type === 'voice') {
                 const sec = Math.round((msg.voiceDuration || 0)/1000);
                 content += `<div class="msg-voice"><audio id="audio-${key}" controls playsinline preload="metadata" src="${msg.voiceData||''}"></audio><div class="voice-controls"><span>Voice • ${sec}s</span>${[0.5,1,1.5,2].map(v=>`<button class='speed-btn ${v===1?'active':''}' onclick="setVoiceSpeed('audio-${key}', ${v}, this)">${v}x</button>`).join('')}</div></div>`;
-            } else content += msg.text;
+            } else content += shownText;
 
             const d = new Date(msg.time);
             const dateStr = `${d.getDate().toString().padStart(2,'0')}.${(d.getMonth()+1).toString().padStart(2,'0')}`;
@@ -2607,8 +2727,9 @@
             const openMenu = (x, y) => {
                 selectedMsgId = key;
                 const menu = document.getElementById('msg-menu');
-                menu.setAttribute('data-text', msg.type==='gift' ? 'Gift' : msg.text);
+                menu.setAttribute('data-text', msg.type==='gift' ? 'Gift' : decryptMessageText(msg.text || ''));
                 menu.setAttribute('data-nick', msg.fromNick);
+                menu.setAttribute('data-msg-id', key);
                 menu.setAttribute('data-gift-type', msg.giftType || '');
                 const preferredTop = y - 220;
                 menu.style.top = Math.max(70, preferredTop) + 'px';
@@ -2634,6 +2755,39 @@
                 lastTapTs = now;
             };
             div.ontouchend = () => clearTimeout(holdTimer);
+        }
+
+        function bindMessageSwipeReply(div, key, msg) {
+            let startX = 0;
+            let dragging = false;
+            const threshold = 85;
+            div.addEventListener('touchstart', e => {
+                if(!e.touches?.length || msg.type === 'call_log') return;
+                startX = e.touches[0].clientX;
+                dragging = true;
+            }, { passive: true });
+            div.addEventListener('touchmove', e => {
+                if(!dragging || !e.touches?.length) return;
+                const dx = Math.max(0, e.touches[0].clientX - startX);
+                const move = Math.min(96, dx);
+                div.style.transform = `translateX(${move}px)`;
+                div.classList.toggle('swipe-active', dx > threshold * 0.55);
+            }, { passive: true });
+            div.addEventListener('touchend', e => {
+                if(!dragging) return;
+                const endX = e.changedTouches?.[0]?.clientX || startX;
+                const dx = endX - startX;
+                div.style.transform = '';
+                div.classList.remove('swipe-active');
+                dragging = false;
+                if(dx >= threshold) {
+                    replyingTo = { id: key, text: decryptMessageText(msg.text || ''), nick: msg.fromNick };
+                    document.getElementById('reply-bar').classList.add('active');
+                    document.getElementById('reply-title').innerText = replyingTo.nick;
+                    document.getElementById('reply-text').innerText = decryptMessageText(replyingTo.text || '');
+                    navigator.vibrate?.(20);
+                }
+            }, { passive: true });
         }
 
         function sendMessage() {
@@ -2665,13 +2819,13 @@
                 showToast(langData[currentLang].channel_readonly);
                 return null;
             }
-            const payload = { from: myId, fromNick: myNick, text: data.text || '', type: data.type || 'text', time: firebase.database.ServerValue.TIMESTAMP, status: 'sent' };
+            const payload = { from: myId, fromNick: myNick, text: encryptMessageText(data.text || ''), type: data.type || 'text', time: firebase.database.ServerValue.TIMESTAMP, status: 'sent' };
             if(data.type === 'gift') { payload.giftIcon = data.giftIcon; payload.giftLabel = data.giftLabel; payload.giftType = data.giftType; }
             if(data.type === 'media') payload.media = data.media || [];
             if(data.type === 'voice') { payload.voiceData = data.voiceData; payload.voiceDuration = data.voiceDuration || 0; }
-            if(replyingTo) { payload.replyTo = replyingTo; cancelReply(); }
+            if(replyingTo) { payload.replyTo = { id: replyingTo.id || '', text: encryptMessageText(replyingTo.text || ''), nick: replyingTo.nick || '' }; cancelReply(); }
             const msgRef = db.ref(`messages/${cid}`).push(payload);
-            const lastTxt = data.type === 'gift' ? '🎁 Gift sent' : (data.type === 'call_log' ? 'Call ended' : data.type === 'media' ? '📎 Media' : data.type === 'voice' ? '🎤 Voice message' : payload.text || 'Message');
+            const lastTxt = data.type === 'gift' ? '🎁 Gift sent' : (data.type === 'call_log' ? 'Call ended' : data.type === 'media' ? '📎 Media' : data.type === 'voice' ? '🎤 Voice message' : (data.text || 'Message'));
             if(isFavorites) {
                 db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
             } else if(!isGroup) {
@@ -2927,10 +3081,10 @@
         }
         function triggerReply() {
             const menu = document.getElementById('msg-menu');
-            replyingTo = { text: menu.getAttribute('data-text'), nick: menu.getAttribute('data-nick') };
+            replyingTo = { id: menu.getAttribute('data-msg-id') || '', text: menu.getAttribute('data-text'), nick: menu.getAttribute('data-nick') };
             document.getElementById('reply-bar').classList.add('active');
             document.getElementById('reply-title').innerText = replyingTo.nick;
-            document.getElementById('reply-text').innerText = replyingTo.text;
+            document.getElementById('reply-text').innerText = decryptMessageText(replyingTo.text || '');
             hideAllMenus();
             document.getElementById('msg-input').focus();
         }
@@ -2978,6 +3132,7 @@
             setTimeout(openPinnedList, 100);
         }
         function jumpToMessage(mid) {
+            if(!mid) return;
             document.getElementById('pin-list-modal').style.display = 'none';
             const el = document.getElementById(`msg-${mid}`);
             if(el) {
@@ -3432,10 +3587,13 @@
             document.getElementById('settings-screen').classList.toggle('active', t==='settings');
 
             // Visual Update for Nav Icons
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(t==='chats') document.querySelectorAll('.nav-item')[0].classList.add('active');
-            if(t==='profile') document.querySelectorAll('.nav-item')[1].classList.add('active');
-            if(t==='settings') document.querySelectorAll('.nav-item')[2].classList.add('active');
+            document.querySelectorAll('.bottom-nav').forEach(nav => {
+                const items = nav.querySelectorAll('.nav-item');
+                items.forEach(el => el.classList.remove('active'));
+                if(t==='chats' && items[0]) items[0].classList.add('active');
+                if(t==='profile' && items[1]) items[1].classList.add('active');
+                if(t==='settings' && items[2]) items[2].classList.add('active');
+            });
         }
 
         // FIX: Change closeChat to use browser history
@@ -3453,7 +3611,13 @@
         function saveProfile() { db.ref(`users/${myId}`).update({bio:document.getElementById('edit-bio').value}); alert(langData[currentLang].save_done); }
         function uploadAvatar(inp) { const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload=e=>{ myAvatar=e.target.result; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:myAvatar}); }; r.readAsDataURL(f); }
         function removeAvatar() { myAvatar=''; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:''}); }
-        function updateProfileUI() { const el = document.getElementById('my-profile-pic'); el.style.backgroundImage = myAvatar?`url(${myAvatar})`:''; el.innerText = myAvatar ? '' : (myNick||'U').replace('$','')[0].toUpperCase(); document.getElementById('profile-nick-display').innerText = myNick; }
+        function updateProfileUI() {
+            const el = document.getElementById('my-profile-pic');
+            el.style.backgroundImage = myAvatar?`url(${myAvatar})`:'';
+            el.innerText = myAvatar ? '' : (myNick||'U').replace('$','')[0].toUpperCase();
+            document.getElementById('profile-nick-display').innerText = myNick;
+            updateHeaderNick();
+        }
         function openLegalModal() { document.getElementById('legal-modal').style.display = 'flex'; }
 
         // === SYSTEM BACK BUTTON HANDLER (NEW) ===
