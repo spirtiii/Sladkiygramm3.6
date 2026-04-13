@@ -26,9 +26,12 @@
         body.theme-sunset { --bg-gradient: linear-gradient(135deg, #ff9966, #ff5e62, #9a366b); --glass: rgba(100, 30, 50, 0.6); --glass-border: 1px solid rgba(255, 255, 255, 0.2); --primary: #ffcc00; --text: #fff5e6; --text-sec: #ffdab9; --msg-in: rgba(100, 20, 40, 0.5); --msg-out: rgba(255, 94, 98, 0.6); --nav-bg: rgba(154, 54, 107, 0.95); }
         body.theme-dark { --bg-gradient: linear-gradient(135deg, #232526, #414345); --glass: rgba(40, 44, 52, 0.8); --glass-border: 1px solid rgba(255, 255, 255, 0.05); --primary: #4facfe; --text: #ffffff; --text-sec: #9aaabb; --msg-in: rgba(255, 255, 255, 0.1); --msg-out: rgba(79, 172, 254, 0.4); --nav-bg: rgba(35, 37, 38, 0.95); }
         body.theme-light { --bg-gradient: linear-gradient(135deg, #e0eafc, #cfdef3); --glass: rgba(255, 255, 255, 0.65); --glass-border: 1px solid rgba(255, 255, 255, 0.8); --primary: #007bff; --text: #333333; --text-sec: #666666; --msg-in: rgba(255, 255, 255, 0.8); --msg-out: rgba(0, 123, 255, 0.3); --nav-bg: rgba(255, 255, 255, 0.95); }
-        body.style-liquid { --blur-strength: 18px; }
-        body.style-material { --blur-strength: 3px; --glass: rgba(255,255,255,0.82); --glass-border: 1px solid rgba(0,0,0,0.08); }
-        body.style-material .glass-panel, body.style-material .modal-content, body.style-material .chat-input-bar, body.style-material .search-filter-card { backdrop-filter: blur(var(--blur-strength)) saturate(110%); -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(110%); box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
+        body.style-liquid { --blur-strength: 20px; --glass-highlight: rgba(255,255,255,0.2); }
+        body.style-liquid .glass-panel, body.style-liquid .modal-content, body.style-liquid .chat-input-bar, body.style-liquid .search-filter-card { backdrop-filter: blur(var(--blur-strength)) saturate(170%); -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(170%); box-shadow: 0 12px 34px rgba(0,0,0,0.26), inset 0 1px 0 var(--glass-highlight); }
+        body.style-material { --blur-strength: 3px; --glass: color-mix(in srgb, var(--primary) 10%, #ffffff); --glass-border: 1px solid color-mix(in srgb, var(--primary) 28%, #8a8a8a); --msg-in: color-mix(in srgb, var(--primary) 12%, #ffffff); --msg-out: color-mix(in srgb, var(--primary) 24%, #ffffff); }
+        body.style-material .glass-panel, body.style-material .modal-content, body.style-material .chat-input-bar, body.style-material .search-filter-card { backdrop-filter: blur(var(--blur-strength)) saturate(112%); -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(112%); box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 3px 8px rgba(0,0,0,0.12); border-radius: 20px; }
+        body.style-material .btn { border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+        body.style-material .chat-item, body.style-material .msg { border-radius: 18px; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: var(--bg-gradient); background-attachment: fixed; color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: 0.5s; }
@@ -358,6 +361,8 @@
         .search-filter-card { display:flex; align-items:center; gap:10px; font-size:13px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:11px 12px; cursor:pointer; background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.05)); backdrop-filter: blur(16px) saturate(165%); -webkit-backdrop-filter: blur(16px) saturate(165%); box-shadow: 0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18); }
         .search-filter-card .selection-box { width: 24px; height: 24px; border-radius: 8px; }
         .search-filter-card.active { border-color: rgba(76,255,143,0.8); box-shadow: 0 0 0 2px rgba(0,200,83,0.25), 0 12px 26px rgba(0,0,0,0.22); }
+        .search-filter-card.active .selection-box { background:#00c853; border-color:#00c853; box-shadow: 0 0 0 4px rgba(0,200,83,0.22); }
+        .search-filter-card.active .selection-box i { opacity:1; transform: scale(1); }
         .member-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
         .member-action-btn { border:none; border-radius:10px; padding:6px 9px; font-size:11px; cursor:pointer; color:#fff; background: rgba(255,255,255,0.18); }
         .member-action-btn.kick { background:#ff4d6d; }
@@ -368,7 +373,9 @@
         .weather-line { height:2px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent); margin-bottom:8px; animation: weatherLine .35s ease; }
         .weather-content { padding:10px 12px 12px; font-size:12px; }
         .weather-hourly { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
-        .hour-chip { min-width:68px; border-radius:12px; padding:8px; background:rgba(0,0,0,.18); text-align:center; }
+        .hour-chip { min-width:84px; border-radius:14px; padding:8px; background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(0,0,0,.18)); text-align:center; border:1px solid rgba(255,255,255,0.16); }
+        .hour-chip .wx { font-size: 18px; margin:2px 0; }
+        .hour-chip .label { font-size:10px; opacity:.82; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .weather-icon.sunny { animation: weatherSpin 7s linear infinite; }
         .weather-icon.cloudy { animation: cloudDrift 2.2s ease-in-out infinite alternate; }
         .weather-icon.rainy { animation: rainBounce 0.8s ease-in-out infinite alternate; }
@@ -644,7 +651,9 @@
                 <button class="btn" style="flex:1;" onclick="startChatFromPreview()"><i class="fas fa-comment"></i></button>
                 <button class="btn" style="flex:1; background:#00e676;" onclick="startCallFromPreview()"><i class="fas fa-video"></i></button>
                 <button class="btn" id="gift-btn-preview" style="flex:1; background:#ff4444; display:none;" onclick="openGiftModal()"><i class="fas fa-gift"></i></button>
+                <button class="btn" id="chat-wallpaper-btn" style="flex:1; background:#4b8dff; display:none;" onclick="document.getElementById('chat-wallpaper-input').click()"><i class="fas fa-image"></i></button>
             </div>
+            <input type="file" id="chat-wallpaper-input" hidden accept="image/*" onchange="uploadDirectWallpaper(this)">
         </div>
     </div>
 
@@ -687,6 +696,13 @@
             <span class="close-modal" onclick="document.getElementById('media-viewer-modal').style.display='none'">&times;</span>
             <div id="media-viewer-content" style="margin-top:15px;"></div>
             <a id="media-save-btn" class="btn" download style="display:inline-block; margin-top:12px;" data-key="save_media">Save</a>
+        </div>
+    </div>
+    <div id="avatar-viewer-modal" class="modal">
+        <div class="modal-content glass-panel" style="max-width:420px;">
+            <span class="close-modal" onclick="document.getElementById('avatar-viewer-modal').style.display='none'">&times;</span>
+            <div id="avatar-viewer-image" style="width:260px;height:260px;margin:10px auto;border-radius:50%;background-size:cover;background-position:center;background-color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:96px;font-weight:800;"></div>
+            <div id="avatar-viewer-name" style="font-size:18px;font-weight:700;"></div>
         </div>
     </div>
 
@@ -1043,6 +1059,7 @@
         let greetingTimer = null;
         let weatherExpanded = false;
         let currentWeatherCode = 3;
+        let avatarHoldTimer = null;
         const WEATHER_CODE_MAP = {
             0: { icon: '☀️', ru: 'Ясно', en: 'Clear' }, 1: { icon: '🌤️', ru: 'Солнечно', en: 'Sunny' }, 2: { icon: '⛅', ru: 'Переменная облачность', en: 'Partly cloudy' }, 3: { icon: '☁️', ru: 'Облачно', en: 'Cloudy' },
             45: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 48: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 51: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 53: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 55: { icon: '🌧️', ru: 'Сильная морось', en: 'Heavy drizzle' },
@@ -1346,7 +1363,9 @@
         }
 
         function setTheme(t, fromAuto = false) {
+            const chosenStyle = localStorage.getItem('sladkiy_style') || (document.body.classList.contains('style-material') ? 'material' : 'liquid');
             document.body.className = t;
+            document.body.classList.add(chosenStyle === 'material' ? 'style-material' : 'style-liquid');
             localStorage.setItem('sladkiy_theme', t);
             if(!fromAuto && localStorage.getItem('sladkiy_round_clock_theme') === '1') {
                 localStorage.removeItem('sladkiy_round_clock_theme');
@@ -1474,13 +1493,16 @@
                 const data = await resp.json();
                 const hourlyTimes = data?.hourly?.time || [];
                 const hourlyTemps = data?.hourly?.temperature_2m || [];
+                const hourlyCodes = data?.hourly?.weather_code || [];
                 const now = Date.now();
                 const chips = [];
                 for(let i=0;i<hourlyTimes.length && chips.length<6;i++) {
                     const ts = new Date(hourlyTimes[i]).getTime();
                     if(ts < now) continue;
                     const h = new Date(ts).getHours().toString().padStart(2,'0');
-                    chips.push(`<div class="hour-chip"><div>${h}:00</div><div style="font-weight:700">${Math.round(hourlyTemps[i])}°</div></div>`);
+                    const wm = WEATHER_CODE_MAP[hourlyCodes[i]] || WEATHER_CODE_MAP[3];
+                    const txt = currentLang === 'ru' ? wm.ru : (currentLang === 'de' ? (wm.de || wm.en) : wm.en);
+                    chips.push(`<div class="hour-chip"><div>${h}:00</div><div class="wx">${wm.icon}</div><div style="font-weight:700">${Math.round(hourlyTemps[i])}°</div><div class="label">${txt}</div></div>`);
                 }
                 const tomorrowMax = data?.daily?.temperature_2m_max?.[1];
                 const tomorrowMin = data?.daily?.temperature_2m_min?.[1];
@@ -1505,6 +1527,34 @@
                 const wall = e.target.result;
                 db.ref(`groups/${currentGroupData.id}`).update({ wallpaper: wall });
                 showToast('Wallpaper updated');
+            };
+            r.readAsDataURL(f);
+        }
+
+        function getDirectChatWallpaperKey(uid = currentChatId) {
+            if(!uid || uid.startsWith('group_') || isFavoritesChat(uid)) return '';
+            return [myId, uid].sort().join('_');
+        }
+
+        function applyChatWallpaper(wallpaper = '') {
+            const chatRoom = document.getElementById('chat-room');
+            if(wallpaper) {
+                chatRoom.classList.add('chat-wallpaper');
+                chatRoom.style.setProperty('--chat-wallpaper', `url(${wallpaper})`);
+            } else {
+                chatRoom.classList.remove('chat-wallpaper');
+                chatRoom.style.removeProperty('--chat-wallpaper');
+            }
+        }
+
+        function uploadDirectWallpaper(inp) {
+            const f = inp.files?.[0];
+            if(!f || !currentChatId || currentChatId.startsWith('group_') || isFavoritesChat(currentChatId)) return;
+            const key = getDirectChatWallpaperKey(currentChatId);
+            const r = new FileReader();
+            r.onload = e => {
+                db.ref(`chatWallpapers/${key}`).set(e.target.result);
+                showToast(currentLang === 'ru' ? 'Обои обновлены для всех' : 'Wallpaper updated for everyone');
             };
             r.readAsDataURL(f);
         }
@@ -2253,6 +2303,11 @@
             el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><i class="fas fa-bell-slash mute-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div><div class="unread-badge" style="display:${showUnread?'inline-flex':'none'}">${showUnread ? (c.unread||'') : ''}</div>`;
             if(showUnread) el.classList.add('unread-glow');
             container.appendChild(el);
+            bindAvatarInspectHandlers(el.querySelector('.avatar'), () => ({
+                name: el.querySelector('.chat-name')?.innerText || c.id,
+                avatar: knownUsers[c.id]?.avatar || '',
+                fallback: (el.querySelector('.chat-name')?.innerText || '?')[0]?.toUpperCase?.() || '?'
+            }));
             if(isFavoritesChat(c.id)) {
                 const av = el.querySelector('.avatar');
                 av.style.background = 'linear-gradient(135deg, #2b7cff, #66b3ff)';
@@ -2553,6 +2608,7 @@
                     groupAvatar.style.background = '';
                     groupAvatar.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
                     groupAvatar.innerHTML = u.avatar ? '' : '<i class="fas fa-users"></i>';
+                    bindAvatarInspectHandlers(groupAvatar, () => ({ name: u.name || id, avatar: u.avatar || '', fallback: (u.name || 'G')[0] }));
                     currentGroupData = { id, ...u };
                     const chatRoom = document.getElementById('chat-room');
                     if(u.wallpaper) { chatRoom.classList.add('chat-wallpaper'); chatRoom.style.setProperty('--chat-wallpaper', `url(${u.wallpaper})`); } else { chatRoom.classList.remove('chat-wallpaper'); chatRoom.style.removeProperty('--chat-wallpaper'); }
@@ -2578,9 +2634,10 @@
                     }
                 });
             } else {
-                const chatRoom = document.getElementById('chat-room'); chatRoom.classList.remove('chat-wallpaper'); chatRoom.style.removeProperty('--chat-wallpaper');
+                applyChatWallpaper('');
                 const userRef = db.ref(`users/${id}`);
                 const typingRef = db.ref(`users/${id}/chats/${myId}/typing`);
+                const wallpaperRef = db.ref(`chatWallpapers/${getDirectChatWallpaperKey(id)}`);
                 const userHandler = s => {
                     const u = s.val(); if(!u) return;
                     document.getElementById('room-name').innerText = u.nick;
@@ -2588,12 +2645,14 @@
                     hAv.style.background = '';
                     hAv.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
                     hAv.innerText = u.avatar ? '' : (u.name||u.nick)[0].toUpperCase();
+                    bindAvatarInspectHandlers(hAv, () => ({ name: u.nick || id, avatar: u.avatar || '', fallback: (u.nick || 'U')[0] }));
                     hAv.parentElement.onclick = (e) => {
                         if(e.target.classList.contains('fa-arrow-left') || e.target.classList.contains('fa-phone') || e.target.classList.contains('fa-video')) return;
                         openUserPreview(id, u);
                     };
                 };
                 trackChatListener(userRef, 'value', userHandler);
+                trackChatListener(wallpaperRef, 'value', ws => applyChatWallpaper(ws.val() || ''));
                 trackChatListener(typingRef, 'value', tSnap => {
                     const isTyping = tSnap.val();
                     const u = knownUsers[id] || {};
@@ -3385,6 +3444,33 @@
             focusChatSearchHit(chatSearchIndex, true);
         }
 
+        function openAvatarViewer({ name = 'User', avatar = '', fallback = '?' } = {}) {
+            const box = document.getElementById('avatar-viewer-image');
+            box.style.backgroundImage = avatar ? `url(${avatar})` : '';
+            box.innerText = avatar ? '' : (fallback || '?').toUpperCase();
+            document.getElementById('avatar-viewer-name').innerText = name;
+            document.getElementById('avatar-viewer-modal').style.display = 'flex';
+        }
+
+        function bindAvatarInspectHandlers(el, getData) {
+            if(!el) return;
+            el._avatarDataGetter = getData;
+            if(el.dataset.holdBound) return;
+            el.dataset.holdBound = '1';
+            const start = (ev) => {
+                const payload = el._avatarDataGetter?.() || {};
+                avatarHoldTimer = setTimeout(() => openAvatarViewer(payload), 520);
+                ev?.stopPropagation?.();
+            };
+            const clear = () => {
+                clearTimeout(avatarHoldTimer);
+                avatarHoldTimer = null;
+            };
+            el.addEventListener('mousedown', start);
+            el.addEventListener('touchstart', start, { passive: true });
+            ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(evt => el.addEventListener(evt, clear));
+        }
+
         // --- NEW FUNCTION: Open Profile from Chat Header ---
         function viewUserProfile() {
             if(!currentChatId || currentChatId.startsWith('group_') || isFavoritesChat(currentChatId)) return;
@@ -3410,6 +3496,8 @@
             document.getElementById('preview-nick').innerText = u.nick;
             document.getElementById('preview-bio').innerText = u.bio || 'No bio';
             document.getElementById('gift-btn-preview').style.display = 'block';
+            document.getElementById('chat-wallpaper-btn').style.display = (currentChatId && currentChatId === uid && !uid.startsWith('group_')) ? 'block' : 'none';
+            bindAvatarInspectHandlers(pic, () => ({ name: u.nick || uid, avatar: u.avatar || '', fallback: (u.nick || uid || '?')[0] }));
         }
         function startChatFromPreview() { document.getElementById('user-preview-modal').style.display = 'none'; document.getElementById('search-modal').style.display = 'none'; openChat(previewUserId); }
         function startCallFromPreview() { document.getElementById('user-preview-modal').style.display = 'none'; document.getElementById('search-modal').style.display = 'none'; currentChatId = previewUserId; initCall(); }
