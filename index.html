@@ -26,6 +26,9 @@
         body.theme-sunset { --bg-gradient: linear-gradient(135deg, #ff9966, #ff5e62, #9a366b); --glass: rgba(100, 30, 50, 0.6); --glass-border: 1px solid rgba(255, 255, 255, 0.2); --primary: #ffcc00; --text: #fff5e6; --text-sec: #ffdab9; --msg-in: rgba(100, 20, 40, 0.5); --msg-out: rgba(255, 94, 98, 0.6); --nav-bg: rgba(154, 54, 107, 0.95); }
         body.theme-dark { --bg-gradient: linear-gradient(135deg, #232526, #414345); --glass: rgba(40, 44, 52, 0.8); --glass-border: 1px solid rgba(255, 255, 255, 0.05); --primary: #4facfe; --text: #ffffff; --text-sec: #9aaabb; --msg-in: rgba(255, 255, 255, 0.1); --msg-out: rgba(79, 172, 254, 0.4); --nav-bg: rgba(35, 37, 38, 0.95); }
         body.theme-light { --bg-gradient: linear-gradient(135deg, #e0eafc, #cfdef3); --glass: rgba(255, 255, 255, 0.65); --glass-border: 1px solid rgba(255, 255, 255, 0.8); --primary: #007bff; --text: #333333; --text-sec: #666666; --msg-in: rgba(255, 255, 255, 0.8); --msg-out: rgba(0, 123, 255, 0.3); --nav-bg: rgba(255, 255, 255, 0.95); }
+        body.style-liquid { --blur-strength: 18px; }
+        body.style-material { --blur-strength: 3px; --glass: rgba(255,255,255,0.82); --glass-border: 1px solid rgba(0,0,0,0.08); }
+        body.style-material .glass-panel, body.style-material .modal-content, body.style-material .chat-input-bar, body.style-material .search-filter-card { backdrop-filter: blur(var(--blur-strength)) saturate(110%); -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(110%); box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: var(--bg-gradient); background-attachment: fixed; color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: 0.5s; }
@@ -96,7 +99,7 @@
         .last-msg { color: var(--text-sec); font-size: 14px; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
 
         /* MESSAGES */
-        .messages-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; padding-bottom: 90px; }
+        .messages-area { scroll-behavior: smooth; will-change: scroll-position; flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; padding-bottom: 90px; }
         .msg { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 15px; position: relative; word-wrap: break-word; line-height: 1.4; animation: msgPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom; cursor: pointer; user-select: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.4s ease; touch-action: pan-y; }
         .msg.swipe-active { box-shadow: 0 0 0 2px rgba(0,230,118,0.35), 0 8px 20px rgba(0,0,0,0.2); }
         @keyframes msgPop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -333,7 +336,7 @@
         .member-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .member-subtitle { font-size: 11px; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .check-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--primary); margin-right: 2px; display: flex; align-items: center; justify-content: center; font-size: 12px; overflow: hidden; background-size: cover; background-position: center; }
-        .selection-box { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s; background: transparent; }
+        .selection-box { width: 22px; height: 22px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.34); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.24s cubic-bezier(.2,.8,.2,1); background: rgba(255,255,255,0.05); }
         .selection-box i { font-size: 11px; opacity: 0; transform: scale(0.7); transition: 0.2s; }
         .user-check-item.selected { border-color: var(--primary); box-shadow: 0 0 0 1px rgba(217,70,239,0.25); background: rgba(217,70,239,0.12); }
         .user-check-item.selected .selection-box { background: #00c853; border-color: #00c853; box-shadow: 0 0 0 4px rgba(0,200,83,0.24); }
@@ -360,6 +363,23 @@
         .member-action-btn.kick { background:#ff4d6d; }
         .member-action-btn.owner { background:#3f8cff; }
 
+        .weather-details-panel { max-height:0; overflow:hidden; opacity:0; transform: translateY(-10px); transition: max-height .45s ease, opacity .3s ease, transform .45s cubic-bezier(.2,.8,.2,1); margin:0 14px; border-radius:16px; border:1px solid rgba(255,255,255,0.2); background:linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.06)); }
+        .weather-details-panel.active { max-height:260px; opacity:1; transform: translateY(0); }
+        .weather-line { height:2px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent); margin-bottom:8px; animation: weatherLine .35s ease; }
+        .weather-content { padding:10px 12px 12px; font-size:12px; }
+        .weather-hourly { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+        .hour-chip { min-width:68px; border-radius:12px; padding:8px; background:rgba(0,0,0,.18); text-align:center; }
+        .weather-icon.sunny { animation: weatherSpin 7s linear infinite; }
+        .weather-icon.cloudy { animation: cloudDrift 2.2s ease-in-out infinite alternate; }
+        .weather-icon.rainy { animation: rainBounce 0.8s ease-in-out infinite alternate; }
+        @keyframes weatherLine { from { opacity:0; transform: scaleX(.2);} to { opacity:1; transform: scaleX(1);} }
+        @keyframes cloudDrift { from { transform: translateX(-2px);} to { transform: translateX(2px);} }
+        @keyframes rainBounce { from { transform: translateY(0);} to { transform: translateY(2px);} }
+        #chat-room.chat-wallpaper::before { content:''; position:absolute; inset:0; background-image: var(--chat-wallpaper); background-size: cover; background-position:center; filter: saturate(110%) brightness(.55) blur(1px); z-index:-2; }
+        #chat-room.chat-wallpaper::after { content:''; position:absolute; inset:0; background: linear-gradient(180deg, rgba(11,16,24,.45), rgba(11,16,24,.6)); z-index:-1; }
+        .style-mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+        .chat-open-anim .msg, .chat-open-anim .chat-item { transition: transform .22s ease, opacity .22s ease; }
+
     </style>
 </head>
 <body class="theme-space" onclick="hideAllMenus()">
@@ -373,6 +393,7 @@
             <div class="lang-select">
                 <div class="lang-btn active" onclick="setLang('en')" id="btn-en">English</div>
                 <div class="lang-btn" onclick="setLang('ru')" id="btn-ru">Русский</div>
+                <div class="lang-btn" onclick="setLang('de')" id="btn-de">Deutsch</div>
             </div>
             <!-- HEADER -->
             <div style="margin-bottom: 30px;">
@@ -420,11 +441,12 @@
                 <div class="header-title">Sladkiygramm</div>
                 <div class="header-subtitle" id="header-my-nick">@user</div>
             </div>
-            <div class="liquid-weather" id="weather-card">
+            <div class="liquid-weather" id="weather-card" onclick="toggleWeatherPanel(event)">
                 <div class="weather-row"><span class="weather-icon" id="weather-icon">☁️</span><span class="weather-temp" id="weather-temp">--°C</span></div>
                 <div class="weather-desc" id="weather-greeting">...</div>
             </div>
         </div>
+        <div id="weather-details" class="weather-details-panel"><div class="weather-line"></div><div class="weather-content"><div id="weather-summary">...</div><div id="weather-tomorrow" style="opacity:.8;margin:6px 0 8px;"></div><div id="weather-hourly" class="weather-hourly"></div></div></div>
         <div class="chat-list" id="chats-container"></div>
         <div class="archive-tab glass-panel" onclick="openArchiveScreen()">
             <span><i class="fas fa-box-archive"></i> <span data-key="archive">Archive</span></span>
@@ -496,6 +518,7 @@
             <div class="lang-select" style="justify-content: flex-start;">
                 <div class="lang-btn" onclick="setLang('en')" id="set-en">English</div>
                 <div class="lang-btn" onclick="setLang('ru')" id="set-ru">Русский</div>
+                <div class="lang-btn" onclick="setLang('de')" id="set-de">Deutsch</div>
             </div>
             <h3 style="margin-top: 25px; margin-bottom: 10px;" data-key="theme">Theme</h3>
             <button class="btn" id="theme-auto-btn" style="padding:10px 12px; margin-bottom:10px;" onclick="toggleRoundClockTheme()" data-key="round_clock_theme">Round-the-clock Theme</button>
@@ -504,6 +527,11 @@
                 <div onclick="setTheme('theme-sunset')" id="theme-sunset" class="btn" style="background:#ff5e62;">Sunset</div>
                 <div onclick="setTheme('theme-dark')" id="theme-dark" class="btn" style="background:#232526;">Dark</div>
                 <div onclick="setTheme('theme-light')" id="theme-light" class="btn" style="background:#e0eafc; color:#333;">Light</div>
+            </div>
+            <h3 style="margin-top: 25px; margin-bottom: 10px;">Style</h3>
+            <div class="style-mode-grid">
+                <button class="btn" id="style-liquid" onclick="setVisualStyle('liquid')">Liquid Glass</button>
+                <button class="btn" id="style-material" onclick="setVisualStyle('material')">Material You</button>
             </div>
             <button class="btn" onclick="logout()" style="background: #ff4444; margin-top: 40px;" data-key="logout">Logout</button>
             <div onclick="openLegalModal()" class="legal-btn" data-key="legal"><i class="fas fa-shield-alt"></i> Privacy & Terms</div>
@@ -671,6 +699,8 @@
         <input id="group-title-input" placeholder="Название">
         <textarea id="group-desc-input" rows="2" placeholder="Описание"></textarea>
         <button id="group-add-member-btn" class="glass-cta-btn" onclick="openGroupAddMembersModal()" style="display:none;"><i class="fas fa-user-plus"></i> <span data-key="add_user">Добавить пользователя</span></button>
+        <button id="group-wallpaper-btn" class="glass-cta-btn" onclick="document.getElementById('group-wallpaper-input').click()" style="display:none;"><i class="fas fa-image"></i> <span>Chat wallpaper</span></button>
+        <input type="file" id="group-wallpaper-input" hidden accept="image/*" onchange="uploadGroupWallpaper(this)">
         <div style="font-size:12px;opacity:.8;margin:6px 0;" id="group-members-count">0 участников</div>
         <div id="group-members-list" style="max-height:180px; overflow:auto; margin:10px 0; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:6px;"></div>
         <button class="btn" onclick="saveGroupInfo()" data-key="save">Save</button>
@@ -930,6 +960,32 @@
                 yes: "Да", no: "Нет", save_media: "Сохранить", account_blocked: "Аккаунт заблокирован",
                 account_blocked_desc: "Вы заблокированы из-за нарушения правил. Обратитесь в поддержку.",
                 search_in_chat: "Поиск в чате...", round_clock_theme: "Круглосуточная тема", round_clock_on: "Автотема 24/7: 04-06 Закат, 06-20 Светлая, 20-22 Закат, 22-04 Тёмная", round_clock_off: "Автотема выключена"
+            },
+            de: {
+                slogan: "Dein super-süßer Messenger!", login_btn: "Los 🚀", chats: "Chats", settings: "Einstellungen", profile: "Profil", theme: "Thema", logout: "Abmelden", save: "Profil speichern", report: "Melden",
+                delete_me: "Für mich löschen", delete_all: "Für alle löschen", reply: "Antworten", delete: "Löschen",
+                new_group: "Neue Gruppe", new_contact: "Neuer Kontakt", create_group: "Gruppe erstellen", create: "Erstellen",
+                search_users: "Nutzer suchen", new_chat_title: "Neuer Chat", new_chat_desc: "Schreibe etwas, um den Verlauf zu starten.",
+                enter_code: "Sicherheitscode", code_desc: "Gib den Code aus deinem Profil ein", enter: "Anmelden", pin: "Chat anheften", pin_msg: "Anheften",
+                forgot_code: "Code vergessen?", recovery_title: "Wiederherstellung", recovery_desc: "Gib den Nick eines Kontakts ein:", check_btn: "Prüfen",
+                legal: "Datenschutz & Regeln", legal_content: "<b>1. Daten:</b> In Firebase gespeichert.<br><b>2. Anrufe:</b> P2P via PeerJS.<br><b>3. Regeln:</b> Kein Spam/illegale Inhalte.<br><b>4. Ohne Gewähr.</b>",
+                give_gift: "Geschenk senden 🎁", give_happiness: "Süße Freude schenken", are_you_sure: "Bist du sicher?", yes_give: "Ja, senden!", cancel: "Abbrechen",
+                gift_love: "Süße Liebe schenken", gift_yes: "JA schenken", gift_toy: "Süßes Spielzeug schenken", pinned_msg: "Angeheftete Nachricht", pinned_msgs_title: "Angeheftete Nachrichten", delete_msg_title: "Nachricht löschen?", delete_chat_title: "Chat löschen?",
+                online: "online", last_seen: "Zuletzt online", typing: "schreibt...", just_now: "gerade eben", at: "um", select_members: "Mitglieder auswählen:",
+                peer_muted: "Gegenüber hat Mikro aus", call_ended: "Anruf beendet", duration: "Dauer", call_back: "Zurückrufen",
+                muted: "Benachrichtigungen aus", unmuted: "Benachrichtigungen an", mute_chat: "Stummschalten", unmute_chat: "Stummschaltung aufheben",
+                group_name: "Gruppenname", group_desc: "Beschreibung", save_done: "Gespeichert", channel_readonly: "Nur Admins können im Kanal schreiben", invite_link: "Einladungslink",
+                create_channel: "Kanal erstellen", day_theme: "Tag", night_theme: "Nacht", join_title: "Per Link beitreten", join_btn: "Beitreten",
+                join_need_auth: "Melde dich zuerst an", join_confirm: "Willst du wirklich beitreten", channel_type: "Kanal", group_type: "Gruppe",
+                invalid_link: "Ungültiger Einladungslink", join_success: "Erfolgreich beigetreten", join_denied: "Einladungslink ungültig",
+                notes_title: "Favoriten", notes_desc: "Persönliche Notizen", members_online: "online", only_you_online: "Nur du bist online",
+                group_manage: "Gruppenverwaltung", add_user: "Nutzer hinzufügen", add_to_group: "Zur Gruppe hinzufügen", add_btn: "Hinzufügen", no_users_available: "Keine Nutzer verfügbar", made_admin: "Zum Admin machen", was_online: "war online",
+                auth_rate_limited: "Zu viele Versuche. Bitte warte.", archive: "Archiv", chats_count: "Chats", delete_avatar: "Avatar löschen", added_items: "Element(e) hinzugefügt", download: "Herunterladen", video_note: "Video-Notiz",
+                chat_archived: "Chat archiviert", chat_unarchived: "Chat aus Archiv entfernt", favorites_cannot_delete: "Favoriten können nicht gelöscht werden", blocked_you: "Du wurdest blockiert!", you_blocked_user: "Du hast diesen Nutzer blockiert", added_to_group_msg: "Du wurdest zur Gruppe hinzugefügt",
+                only_creator_edit_group: "Nur Ersteller kann Namen/Beschreibung ändern", enter_group_name_alert: "Gruppennamen eingeben", creator_changed_group_data: "✏️ Ersteller hat Gruppendaten geändert",
+                search_groups_only: "Nur Gruppen/Kanäle suchen", add_admin: "Admin geben", revoke_admin: "Admin entziehen", kick_user: "Entfernen", owner_label: "Besitzer", admin_label: "Admin", member_label: "Mitglied",
+                kick_confirm: "Nutzer wirklich entfernen?", logout_confirm: "Wirklich abmelden?", yes: "Ja", no: "Nein", save_media: "Speichern", account_blocked: "Konto gesperrt",
+                account_blocked_desc: "Dein Konto wurde wegen Regelverstoß gesperrt.", search_in_chat: "Im Chat suchen...", round_clock_theme: "24/7-Thema", round_clock_on: "Auto-Thema 24/7 aktiv", round_clock_off: "Auto-Thema deaktiviert"
             }
         };
 
@@ -985,6 +1041,8 @@
         let chatSearchMatches = [];
         let chatSearchIndex = -1;
         let greetingTimer = null;
+        let weatherExpanded = false;
+        let currentWeatherCode = 3;
         const WEATHER_CODE_MAP = {
             0: { icon: '☀️', ru: 'Ясно', en: 'Clear' }, 1: { icon: '🌤️', ru: 'Солнечно', en: 'Sunny' }, 2: { icon: '⛅', ru: 'Переменная облачность', en: 'Partly cloudy' }, 3: { icon: '☁️', ru: 'Облачно', en: 'Cloudy' },
             45: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 48: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 51: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 53: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 55: { icon: '🌧️', ru: 'Сильная морось', en: 'Heavy drizzle' },
@@ -1005,6 +1063,7 @@
                     setTheme(savedTheme);
                 }
                 updateThemeControls();
+                setVisualStyle(localStorage.getItem('sladkiy_style') || 'liquid');
 
                 document.querySelectorAll('.code-digit').forEach((el, idx, arr) => {
                     el.oninput = () => { if(el.value && idx < 3) arr[idx+1].focus(); };
@@ -1033,8 +1092,10 @@
             localStorage.setItem('sladkiy_lang', lang);
             document.getElementById('btn-en').classList.toggle('selected-border', lang==='en');
             document.getElementById('btn-ru').classList.toggle('selected-border', lang==='ru');
+            document.getElementById('btn-de')?.classList.toggle('selected-border', lang==='de');
             document.getElementById('set-en').classList.toggle('selected-border', lang==='en');
             document.getElementById('set-ru').classList.toggle('selected-border', lang==='ru');
+            document.getElementById('set-de')?.classList.toggle('selected-border', lang==='de');
 
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.getAttribute('data-key');
@@ -1330,6 +1391,7 @@
                 if(roundClockThemeTimer) clearInterval(roundClockThemeTimer);
                 roundClockThemeTimer = null;
                 updateThemeControls();
+                setVisualStyle(localStorage.getItem('sladkiy_style') || 'liquid');
                 showToast(langData[currentLang].round_clock_off);
                 return;
             }
@@ -1349,10 +1411,10 @@
 
         function getGreetingText() {
             const h = new Date().getHours();
-            if(h >= 4 && h < 12) return currentLang === 'ru' ? 'Доброе утро' : 'Good morning';
-            if(h >= 12 && h < 20) return currentLang === 'ru' ? 'Добрый день' : 'Good afternoon';
-            if(h >= 20 && h < 22) return currentLang === 'ru' ? 'Добрый вечер' : 'Good evening';
-            return currentLang === 'ru' ? 'Доброй ночи' : 'Good night';
+            if(h >= 4 && h < 12) return currentLang === 'ru' ? 'Доброе утро' : (currentLang === 'de' ? 'Guten Morgen' : 'Good morning');
+            if(h >= 12 && h < 20) return currentLang === 'ru' ? 'Добрый день' : (currentLang === 'de' ? 'Guten Tag' : 'Good afternoon');
+            if(h >= 20 && h < 22) return currentLang === 'ru' ? 'Добрый вечер' : (currentLang === 'de' ? 'Guten Abend' : 'Good evening');
+            return currentLang === 'ru' ? 'Доброй ночи' : (currentLang === 'de' ? 'Gute Nacht' : 'Good night');
         }
 
         function updateHeaderNick() {
@@ -1361,11 +1423,11 @@
         }
 
         function updateWeatherCard(payload = null) {
-            const w = payload || { icon: '☁️', temp: '--', text: currentLang === 'ru' ? 'Погода недоступна' : 'Weather unavailable' };
+            const w = payload || { icon: '☁️', temp: '--', text: currentLang === 'ru' ? 'Погода недоступна' : (currentLang === 'de' ? 'Wetter nicht verfügbar' : 'Weather unavailable') };
             const icon = document.getElementById('weather-icon');
             const temp = document.getElementById('weather-temp');
             const greeting = document.getElementById('weather-greeting');
-            if(icon) icon.innerText = w.icon;
+            if(icon) { icon.innerText = w.icon; icon.className = `weather-icon ${getWeatherAnimClass(currentWeatherCode)}`; }
             if(temp) temp.innerText = `${w.temp}°C`;
             if(greeting) greeting.innerText = `${getGreetingText()} • ${w.text}`;
         }
@@ -1382,10 +1444,69 @@
                     const resp = await fetch(url);
                     const data = await resp.json();
                     const current = data?.current || {};
-                    const map = WEATHER_CODE_MAP[current.weather_code] || { icon: '🌤️', ru: 'Погода', en: 'Weather' };
-                    updateWeatherCard({ icon: map.icon, temp: Math.round(current.temperature_2m ?? 0), text: currentLang === 'ru' ? map.ru : map.en });
+                    currentWeatherCode = current.weather_code;
+                    const map = WEATHER_CODE_MAP[current.weather_code] || { icon: '🌤️', ru: 'Погода', en: 'Weather', de: 'Wetter' };
+                    updateWeatherCard({ icon: map.icon, temp: Math.round(current.temperature_2m ?? 0), text: currentLang === 'ru' ? map.ru : (currentLang === 'de' ? (map.de || map.en) : map.en) });
+                    fetchWeatherDetails(latitude, longitude);
                 } catch(e) { updateWeatherCard(); }
             }, () => updateWeatherCard());
+        }
+
+        function getWeatherAnimClass(code) {
+            if([0,1].includes(code)) return 'sunny';
+            if([2,3,45,48].includes(code)) return 'cloudy';
+            if([51,53,55,61,63,65,80,95].includes(code)) return 'rainy';
+            return 'cloudy';
+        }
+
+        function toggleWeatherPanel(e) {
+            e?.stopPropagation?.();
+            weatherExpanded = !weatherExpanded;
+            document.getElementById('weather-details')?.classList.toggle('active', weatherExpanded);
+            const icon = document.getElementById('weather-icon');
+            if(icon) icon.className = `weather-icon ${getWeatherAnimClass(currentWeatherCode)}`;
+        }
+
+        async function fetchWeatherDetails(lat, lon) {
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=auto`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                const hourlyTimes = data?.hourly?.time || [];
+                const hourlyTemps = data?.hourly?.temperature_2m || [];
+                const now = Date.now();
+                const chips = [];
+                for(let i=0;i<hourlyTimes.length && chips.length<6;i++) {
+                    const ts = new Date(hourlyTimes[i]).getTime();
+                    if(ts < now) continue;
+                    const h = new Date(ts).getHours().toString().padStart(2,'0');
+                    chips.push(`<div class="hour-chip"><div>${h}:00</div><div style="font-weight:700">${Math.round(hourlyTemps[i])}°</div></div>`);
+                }
+                const tomorrowMax = data?.daily?.temperature_2m_max?.[1];
+                const tomorrowMin = data?.daily?.temperature_2m_min?.[1];
+                document.getElementById('weather-summary').innerText = currentLang==='ru' ? 'Подробный прогноз' : (currentLang==='de' ? 'Detaillierte Vorhersage' : 'Detailed forecast');
+                document.getElementById('weather-tomorrow').innerText = (currentLang==='ru' ? 'Завтра: ' : (currentLang==='de' ? 'Morgen: ' : 'Tomorrow: ')) + `${Math.round(tomorrowMin)}° ... ${Math.round(tomorrowMax)}°`;
+                document.getElementById('weather-hourly').innerHTML = chips.join('');
+            } catch(e) {}
+        }
+
+        function setVisualStyle(style) {
+            document.body.classList.toggle('style-material', style === 'material');
+            document.body.classList.toggle('style-liquid', style !== 'material');
+            localStorage.setItem('sladkiy_style', style);
+            document.getElementById('style-liquid')?.classList.toggle('selected-border', style !== 'material');
+            document.getElementById('style-material')?.classList.toggle('selected-border', style === 'material');
+        }
+
+        function uploadGroupWallpaper(inp) {
+            const f = inp.files?.[0]; if(!f || !currentGroupData?.id) return;
+            const r = new FileReader();
+            r.onload = e => {
+                const wall = e.target.result;
+                db.ref(`groups/${currentGroupData.id}`).update({ wallpaper: wall });
+                showToast('Wallpaper updated');
+            };
+            r.readAsDataURL(f);
         }
 
         function getChatCryptoKey() {
@@ -2433,6 +2554,8 @@
                     groupAvatar.style.backgroundImage = u.avatar ? `url(${u.avatar})` : '';
                     groupAvatar.innerHTML = u.avatar ? '' : '<i class="fas fa-users"></i>';
                     currentGroupData = { id, ...u };
+                    const chatRoom = document.getElementById('chat-room');
+                    if(u.wallpaper) { chatRoom.classList.add('chat-wallpaper'); chatRoom.style.setProperty('--chat-wallpaper', `url(${u.wallpaper})`); } else { chatRoom.classList.remove('chat-wallpaper'); chatRoom.style.removeProperty('--chat-wallpaper'); }
                     document.getElementById('room-header-avatar').parentElement.onclick = () => openGroupInfo();
                     refreshGroupOnlineStatus();
                 };
@@ -2455,6 +2578,7 @@
                     }
                 });
             } else {
+                const chatRoom = document.getElementById('chat-room'); chatRoom.classList.remove('chat-wallpaper'); chatRoom.style.removeProperty('--chat-wallpaper');
                 const userRef = db.ref(`users/${id}`);
                 const typingRef = db.ref(`users/${id}/chats/${myId}/typing`);
                 const userHandler = s => {
@@ -2905,6 +3029,7 @@
                 document.getElementById('group-title-input').disabled = !canEdit;
                 document.getElementById('group-desc-input').disabled = !canEdit;
                 document.getElementById('group-add-member-btn').style.display = canEdit ? 'block' : 'none';
+                document.getElementById('group-wallpaper-btn').style.display = canEdit ? 'block' : 'none';
                 renderGroupMembers(g, canManageAdmins);
                 document.getElementById('group-info-modal').style.display = 'flex';
             });
@@ -2969,10 +3094,12 @@
             if(!f) return;
             const r = new FileReader();
             r.onload = e => {
-                db.ref(`groups/${currentGroupData.id}`).update({ avatar: e.target.result });
-                const av = document.getElementById('group-avatar-preview');
-                av.style.backgroundImage = `url(${e.target.result})`;
-                av.innerHTML = '';
+                centerCropDataUrl(e.target.result, data => {
+                    db.ref(`groups/${currentGroupData.id}`).update({ avatar: data });
+                    const av = document.getElementById('group-avatar-preview');
+                    av.style.backgroundImage = `url(${data})`;
+                    av.innerHTML = '';
+                });
             };
             r.readAsDataURL(f);
         }
@@ -3602,6 +3729,21 @@
             if(history.state?.view === 'chat') history.back();
         }
 
+        function centerCropDataUrl(src, done) {
+            const img = new Image();
+            img.onload = () => {
+                const side = Math.min(img.width, img.height);
+                const sx = Math.floor((img.width - side)/2);
+                const sy = Math.floor((img.height - side)/2);
+                const c = document.createElement('canvas');
+                c.width = 700; c.height = 700;
+                const ctx = c.getContext('2d');
+                ctx.drawImage(img, sx, sy, side, side, 0, 0, 700, 700);
+                done(c.toDataURL('image/jpeg', 0.9));
+            };
+            img.src = src;
+        }
+
         function logout() {
             if(!confirm(langData[currentLang].logout_confirm)) return;
             localStorage.removeItem('sladkiy_session_user');
@@ -3609,7 +3751,7 @@
             location.reload();
         }
         function saveProfile() { db.ref(`users/${myId}`).update({bio:document.getElementById('edit-bio').value}); alert(langData[currentLang].save_done); }
-        function uploadAvatar(inp) { const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload=e=>{ myAvatar=e.target.result; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:myAvatar}); }; r.readAsDataURL(f); }
+        function uploadAvatar(inp) { const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload=e=>{ centerCropDataUrl(e.target.result, data => { myAvatar=data; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:myAvatar}); }); }; r.readAsDataURL(f); }
         function removeAvatar() { myAvatar=''; updateProfileUI(); db.ref(`users/${myId}`).update({avatar:''}); }
         function updateProfileUI() {
             const el = document.getElementById('my-profile-pic');
@@ -3619,6 +3761,25 @@
             updateHeaderNick();
         }
         function openLegalModal() { document.getElementById('legal-modal').style.display = 'flex'; }
+
+
+        (function setupChatEdgeSwipeBack(){
+            const chatRoom = document.getElementById('chat-room');
+            if(!chatRoom) return;
+            let sx = 0, sy = 0, tracking = false;
+            chatRoom.addEventListener('touchstart', e => {
+                if(!chatRoom.classList.contains('active')) return;
+                const t = e.touches?.[0]; if(!t) return;
+                sx = t.clientX; sy = t.clientY; tracking = sx < 24;
+            }, {passive:true});
+            chatRoom.addEventListener('touchmove', e => {
+                if(!tracking) return;
+                const t = e.touches?.[0]; if(!t) return;
+                const dx = t.clientX - sx, dy = Math.abs(t.clientY - sy);
+                if(dx > 70 && dy < 42) { tracking = false; closeChat(); }
+            }, {passive:true});
+            chatRoom.addEventListener('touchend', () => { tracking = false; }, {passive:true});
+        })();
 
         // === SYSTEM BACK BUTTON HANDLER (NEW) ===
         window.addEventListener('popstate', function(event) {
