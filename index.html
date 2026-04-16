@@ -105,8 +105,9 @@
         .last-msg .status-inline { margin-right: 6px; font-size: 11px; opacity: 0.85; }
 
         /* MESSAGES */
-        .messages-area { scroll-behavior: smooth; will-change: scroll-position; flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; padding-bottom: 90px; }
+        .messages-area { scroll-behavior: auto; will-change: scroll-position; flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; padding-bottom: 90px; overscroll-behavior: contain; }
         .msg { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 15px; position: relative; word-wrap: break-word; line-height: 1.4; animation: msgPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom; cursor: pointer; user-select: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.4s ease; touch-action: pan-y; }
+        .msg.msg-no-anim { animation: none !important; transition: none !important; }
         .msg.swipe-active { box-shadow: 0 0 0 2px rgba(0,230,118,0.35), 0 8px 20px rgba(0,0,0,0.2); }
         @keyframes msgPop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -565,7 +566,7 @@
                 <div id="room-name" style="font-weight: 700; font-size: 17px;">$User</div>
                 <div id="room-status" style="font-size: 12px; opacity: 0.7;">offline</div>
             </div>
-            <div class="header-action-btn" onclick="startHeaderCall(event)"><i class="fas fa-phone"></i></div>
+            <div id="header-call-btn" class="header-action-btn" onclick="startHeaderCall(event)"><i class="fas fa-phone"></i></div>
             <div id="chat-search-toggle" class="header-action-btn" onclick="toggleChatSearch(event)"><i class="fas fa-search"></i></div>
         </div>
         <div id="chat-search-bar" class="chat-search-bar">
@@ -2075,6 +2076,7 @@
             const bubble = document.getElementById('typing-bubble');
             if(!area || !bubble) return;
             const wasNearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 120;
+            const distanceFromBottom = area.scrollHeight - area.scrollTop;
             area.querySelectorAll('.msg').forEach(el => el.remove());
             const isGroup = currentChatId?.startsWith('group_');
             for(let i = visibleMessageStart; i < visibleMessageEnd; i++) {
@@ -2084,6 +2086,7 @@
             }
             checkEmptyChat();
             if(keepBottom && wasNearBottom) area.scrollTop = area.scrollHeight;
+            else area.scrollTop = Math.max(0, area.scrollHeight - distanceFromBottom);
         }
 
         async function loadOlderMessagesChunk(chunkSize = 80) {
@@ -2682,6 +2685,8 @@
 
             const isGroup = id.startsWith('group_');
             const isFavorites = isFavoritesChat(id);
+            const headerCallBtn = document.getElementById('header-call-btn');
+            if(headerCallBtn) headerCallBtn.style.display = isGroup ? 'none' : 'flex';
             const cid = isFavorites ? getFavoritesMessagePath() : (isGroup ? id : [myId, id].sort().join('_'));
             currentChatAccess = { blockedByMe: Boolean(chatMetaMap[id]?.blockedByMe), blockedMe: false };
             updateChatAccessUI();
@@ -2899,7 +2904,7 @@
                 visibleMessageEnd = chatMessageBuffer.length;
                 const isNearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 120;
                 if(isNearBottom) visibleMessageStart = trimWindowByChars(visibleMessageEnd, MESSAGE_CHAR_WINDOW + MESSAGE_CHAR_CHUNK);
-                rerenderVisibleMessages(false);
+                rerenderVisibleMessages(isNearBottom);
             });
         }
 
@@ -2960,6 +2965,7 @@
 
             const div = document.createElement('div');
             div.className = msg.from === myId ? 'msg msg-out' : 'msg msg-in';
+            if(forceUpdate) div.classList.add('msg-no-anim');
             div.id = `msg-${key}`;
 
             if (msg.type === 'call_invite') { return; }
