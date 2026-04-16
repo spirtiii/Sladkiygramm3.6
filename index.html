@@ -28,10 +28,11 @@
         body.theme-light { --bg-gradient: linear-gradient(135deg, #e0eafc, #cfdef3); --glass: rgba(255, 255, 255, 0.65); --glass-border: 1px solid rgba(255, 255, 255, 0.8); --primary: #007bff; --text: #333333; --text-sec: #666666; --msg-in: rgba(255, 255, 255, 0.8); --msg-out: rgba(0, 123, 255, 0.3); --nav-bg: rgba(255, 255, 255, 0.95); }
         body.style-liquid { --blur-strength: 20px; --glass-highlight: rgba(255,255,255,0.2); }
         body.style-liquid .glass-panel, body.style-liquid .modal-content, body.style-liquid .chat-input-bar, body.style-liquid .search-filter-card { backdrop-filter: blur(var(--blur-strength)) saturate(170%); -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(170%); box-shadow: 0 12px 34px rgba(0,0,0,0.26), inset 0 1px 0 var(--glass-highlight); }
-        body.style-material { --blur-strength: 3px; --glass: color-mix(in srgb, var(--primary) 10%, #ffffff); --glass-border: 1px solid color-mix(in srgb, var(--primary) 28%, #8a8a8a); --msg-in: color-mix(in srgb, var(--primary) 12%, #ffffff); --msg-out: color-mix(in srgb, var(--primary) 24%, #ffffff); }
-        body.style-material .glass-panel, body.style-material .modal-content, body.style-material .chat-input-bar, body.style-material .search-filter-card { backdrop-filter: blur(var(--blur-strength)) saturate(112%); -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(112%); box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 3px 8px rgba(0,0,0,0.12); border-radius: 20px; }
+        body.style-material { --blur-strength: 5px; --glass: color-mix(in srgb, var(--primary) 16%, #20242d); --glass-border: 1px solid color-mix(in srgb, var(--primary) 36%, #697286); --msg-in: color-mix(in srgb, var(--primary) 22%, #232a36); --msg-out: color-mix(in srgb, var(--primary) 34%, #2a3342); }
+        body.style-material .glass-panel, body.style-material .modal-content, body.style-material .chat-input-bar, body.style-material .search-filter-card { backdrop-filter: blur(var(--blur-strength)) saturate(128%); -webkit-backdrop-filter: blur(var(--blur-strength)) saturate(128%); box-shadow: 0 1px 2px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.22); border-radius: 20px; }
         body.style-material .btn { border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
         body.style-material .chat-item, body.style-material .msg { border-radius: 18px; }
+        body.style-material.theme-light { --glass: color-mix(in srgb, var(--primary) 15%, #e5e9f1); --msg-in: color-mix(in srgb, var(--primary) 14%, #eef2f8); --msg-out: color-mix(in srgb, var(--primary) 28%, #e4ebf7); }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: var(--bg-gradient); background-attachment: fixed; color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: 0.5s; }
@@ -100,6 +101,8 @@
         .chat-info { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
         .chat-name { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 5px; }
         .last-msg { color: var(--text-sec); font-size: 14px; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
+        .last-msg .draft-prefix { color: #ff5e6c; font-weight: 700; }
+        .last-msg .status-inline { margin-right: 6px; font-size: 11px; opacity: 0.85; }
 
         /* MESSAGES */
         .messages-area { scroll-behavior: smooth; will-change: scroll-position; flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; padding-bottom: 90px; }
@@ -356,6 +359,9 @@
         .chat-search-next-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.28); background: linear-gradient(135deg, rgba(255,255,255,0.24), rgba(255,255,255,0.09)); color: var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform 0.18s ease, background 0.25s ease, box-shadow 0.2s ease; box-shadow: 0 8px 18px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.25); backdrop-filter: blur(15px) saturate(160%); -webkit-backdrop-filter: blur(15px) saturate(160%); }
         .chat-search-next-btn:active { transform: scale(0.88); background: linear-gradient(135deg, rgba(255, 104, 156, 0.95), rgba(255, 73, 132, 0.8)); color: #fff; box-shadow: 0 0 0 5px rgba(255, 88, 150, 0.24), 0 10px 22px rgba(255, 83, 140, 0.35); }
         .chat-search-next-btn.bubble-anim { animation: bubbleBounce 0.22s ease; }
+        .scroll-bottom-indicator { position: absolute; right: 14px; bottom: 110px; z-index: 45; display: none; align-items: center; gap: 7px; padding: 9px 12px; border-radius: 16px; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(14px); color: #fff; cursor: pointer; animation: msgPop .25s ease; }
+        .scroll-bottom-indicator.active { display: inline-flex; }
+        .scroll-bottom-indicator .unread-mini { min-width: 18px; height: 18px; border-radius: 10px; background: #00e676; color: #00190b; font-size: 10px; font-weight: 800; display:flex; align-items:center; justify-content:center; padding:0 5px; }
         @keyframes bubbleBounce { 0% { transform: scale(1); } 45% { transform: scale(0.83); } 100% { transform: scale(1.02); } }
         .msg.search-hit { outline: 2px solid #ff6b7e; box-shadow: 0 0 0 2px rgba(255,107,126,0.25); }
         .search-filter-card { display:flex; align-items:center; gap:10px; font-size:13px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:11px 12px; cursor:pointer; background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.05)); backdrop-filter: blur(16px) saturate(165%); -webkit-backdrop-filter: blur(16px) saturate(165%); box-shadow: 0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18); }
@@ -559,6 +565,7 @@
                 <div id="room-name" style="font-weight: 700; font-size: 17px;">$User</div>
                 <div id="room-status" style="font-size: 12px; opacity: 0.7;">offline</div>
             </div>
+            <div class="header-action-btn" onclick="startHeaderCall(event)"><i class="fas fa-phone"></i></div>
             <div id="chat-search-toggle" class="header-action-btn" onclick="toggleChatSearch(event)"><i class="fas fa-search"></i></div>
         </div>
         <div id="chat-search-bar" class="chat-search-bar">
@@ -589,6 +596,10 @@
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
             </div>
+        </div>
+        <div id="scroll-bottom-indicator" class="scroll-bottom-indicator" onclick="scrollChatToBottom(true)">
+            <i class="fas fa-arrow-down"></i>
+            <span id="scroll-bottom-count" class="unread-mini">0</span>
         </div>
 
         <div class="chat-input-container">
@@ -931,7 +942,7 @@
                 auth_rate_limited: "Too many attempts. Please wait a bit.", archive: "Archive", chats_count: "chats",
                 delete_avatar: "Delete avatar", added_items: "item(s) added", download: "Download", video_note: "Video note",
                 chat_archived: "Chat moved to archive", chat_unarchived: "Chat moved out of archive",
-                favorites_cannot_delete: "Favorites cannot be deleted", blocked_you: "You are blocked!",
+                favorites_cannot_delete: "Favorites cannot be deleted", clear_favorites: "Clear favorites chat", draft_label: "Draft", blocked_you: "You are blocked!",
                 you_blocked_user: "You blocked this user", added_to_group_msg: "You were added to group",
                 only_creator_edit_group: "Only creator can change group name and description",
                 enter_group_name_alert: "Enter group name", creator_changed_group_data: "✏️ Creator changed group details",
@@ -966,7 +977,7 @@
                 auth_rate_limited: "Слишком много попыток. Подождите немного.", archive: "Архив", chats_count: "чатов",
                 delete_avatar: "Удалить аватарку", added_items: "элементов добавлено", download: "Скачать", video_note: "Видео-заметка",
                 chat_archived: "Чат отправлен в архив", chat_unarchived: "Чат возвращён из архива",
-                favorites_cannot_delete: "Избранное нельзя удалить", blocked_you: "Вас заблокировали!",
+                favorites_cannot_delete: "Избранное нельзя удалить", clear_favorites: "Очистить избранное", draft_label: "Черновик", blocked_you: "Вас заблокировали!",
                 you_blocked_user: "Вы заблокировали пользователя", added_to_group_msg: "Вас добавили в группу",
                 only_creator_edit_group: "Только создатель может менять название и описание",
                 enter_group_name_alert: "Введите название группы", creator_changed_group_data: "✏️ Создатель изменил данные группы",
@@ -997,7 +1008,7 @@
                 notes_title: "Favoriten", notes_desc: "Persönliche Notizen", members_online: "online", only_you_online: "Nur du bist online",
                 group_manage: "Gruppenverwaltung", add_user: "Nutzer hinzufügen", add_to_group: "Zur Gruppe hinzufügen", add_btn: "Hinzufügen", no_users_available: "Keine Nutzer verfügbar", made_admin: "Zum Admin machen", was_online: "war online",
                 auth_rate_limited: "Zu viele Versuche. Bitte warte.", archive: "Archiv", chats_count: "Chats", delete_avatar: "Avatar löschen", added_items: "Element(e) hinzugefügt", download: "Herunterladen", video_note: "Video-Notiz",
-                chat_archived: "Chat archiviert", chat_unarchived: "Chat aus Archiv entfernt", favorites_cannot_delete: "Favoriten können nicht gelöscht werden", blocked_you: "Du wurdest blockiert!", you_blocked_user: "Du hast diesen Nutzer blockiert", added_to_group_msg: "Du wurdest zur Gruppe hinzugefügt",
+                chat_archived: "Chat archiviert", chat_unarchived: "Chat aus Archiv entfernt", favorites_cannot_delete: "Favoriten können nicht gelöscht werden", clear_favorites: "Favoriten-Chat leeren", draft_label: "Entwurf", blocked_you: "Du wurdest blockiert!", you_blocked_user: "Du hast diesen Nutzer blockiert", added_to_group_msg: "Du wurdest zur Gruppe hinzugefügt",
                 only_creator_edit_group: "Nur Ersteller kann Namen/Beschreibung ändern", enter_group_name_alert: "Gruppennamen eingeben", creator_changed_group_data: "✏️ Ersteller hat Gruppendaten geändert",
                 search_groups_only: "Nur Gruppen/Kanäle suchen", add_admin: "Admin geben", revoke_admin: "Admin entziehen", kick_user: "Entfernen", owner_label: "Besitzer", admin_label: "Admin", member_label: "Mitglied",
                 kick_confirm: "Nutzer wirklich entfernen?", logout_confirm: "Wirklich abmelden?", yes: "Ja", no: "Nein", save_media: "Speichern", account_blocked: "Konto gesperrt",
@@ -1060,6 +1071,9 @@
         let weatherExpanded = false;
         let currentWeatherCode = 3;
         let avatarHoldTimer = null;
+        let draftSaveTimer = null;
+        let pendingUnreadInChat = 0;
+        let currentDraftText = '';
         const WEATHER_CODE_MAP = {
             0: { icon: '☀️', ru: 'Ясно', en: 'Clear' }, 1: { icon: '🌤️', ru: 'Солнечно', en: 'Sunny' }, 2: { icon: '⛅', ru: 'Переменная облачность', en: 'Partly cloudy' }, 3: { icon: '☁️', ru: 'Облачно', en: 'Cloudy' },
             45: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 48: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 51: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 53: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 55: { icon: '🌧️', ru: 'Сильная морось', en: 'Heavy drizzle' },
@@ -1086,7 +1100,7 @@
                     el.oninput = () => { if(el.value && idx < 3) arr[idx+1].focus(); };
                 });
 
-                document.getElementById('msg-input').addEventListener('input', () => { handleTyping(); updateSendButtonState(); mediaDraftCaption = document.getElementById('msg-input').value; });
+                document.getElementById('msg-input').addEventListener('input', () => { handleTyping(); updateSendButtonState(); mediaDraftCaption = document.getElementById('msg-input').value; queueDraftSave(); });
                 document.getElementById('group-channel-toggle')?.addEventListener('click', (e) => {
                     e.preventDefault();
                     const cb = document.getElementById('group-is-channel');
@@ -1150,6 +1164,14 @@
             updateArchiveCount();
             initWeather();
             updateThemeControls();
+            Object.values(chatMetaMap).forEach(chat => {
+                if(chat?.id) upsertChatItem({ id: chat.id, ...chat });
+            });
+            if(myId) {
+                db.ref(`users/${myId}/chats/${FAVORITES_CHAT_ID}`).update({
+                    lastMsg: chatMetaMap[FAVORITES_CHAT_ID]?.lastMsg || langData[currentLang].notes_desc
+                });
+            }
         }
 
         function syncSearchGroupsOnlyCard() {
@@ -1249,6 +1271,11 @@
         }
 
         function closeChatRoomUI(resetHistoryState = false) {
+            if(currentChatId && myId) {
+                if(currentChatId.startsWith('group_')) db.ref(`groups/${currentChatId}/typing/${myId}`).remove();
+                else if(!isFavoritesChat(currentChatId)) db.ref(`users/${myId}/chats/${currentChatId}/typing`).remove();
+                saveDraft(currentChatId);
+            }
             cleanupChatListeners();
             const chatRoom = document.getElementById('chat-room');
             chatRoom.classList.remove('active');
@@ -2203,6 +2230,7 @@
             processJoinInviteFromUrl();
             updateHeaderNick();
             initWeather();
+            switchTab('chats', true);
         }
 
         function cleanupTestGroups() {
@@ -2269,10 +2297,71 @@
             db.ref(`users/${myId}/chats`).on('child_changed', s => {
                 upsertChatItem({ id: s.key, ...s.val() }, true);
             });
+            db.ref(`users/${myId}/drafts`).on('child_added', s => {
+                const cid = s.key;
+                chatMetaMap[cid] = { ...(chatMetaMap[cid] || {}), id: cid, draftText: s.val()?.text || '' };
+                if(chatMetaMap[cid]?.timestamp) upsertChatItem({ id: cid, ...chatMetaMap[cid] });
+            });
+            db.ref(`users/${myId}/drafts`).on('child_changed', s => {
+                const cid = s.key;
+                chatMetaMap[cid] = { ...(chatMetaMap[cid] || {}), id: cid, draftText: s.val()?.text || '' };
+                if(chatMetaMap[cid]?.timestamp) upsertChatItem({ id: cid, ...chatMetaMap[cid] }, true);
+            });
+            db.ref(`users/${myId}/drafts`).on('child_removed', s => {
+                const cid = s.key;
+                if(chatMetaMap[cid]) {
+                    chatMetaMap[cid].draftText = '';
+                    upsertChatItem({ id: cid, ...chatMetaMap[cid] });
+                }
+            });
         }
 
         function removeChatItem(chatId) {
             document.querySelectorAll(`[data-chat-id="${chatId}"]`).forEach(el => el.remove());
+        }
+
+        function getDraftForChat(chatId) {
+            return chatMetaMap[chatId]?.draftText || '';
+        }
+
+        function getStatusIconForChat(chat) {
+            if(!chat || chat.lastFrom !== myId) return '';
+            return chat.lastStatus === 'read'
+                ? '<i class="fas fa-check-double status-read status-inline"></i>'
+                : '<i class="fas fa-check status-sent status-inline"></i>';
+        }
+
+        function buildChatPreviewHtml(chat) {
+            const draftText = getDraftForChat(chat.id);
+            if(draftText) return `<span class="draft-prefix">${langData[currentLang].draft_label || 'Draft'}:</span> ${draftText}`;
+            return `${getStatusIconForChat(chat)}${chat.lastMsg || '...'}`;
+        }
+
+        function queueDraftSave() {
+            if(!myId || !currentChatId) return;
+            clearTimeout(draftSaveTimer);
+            draftSaveTimer = setTimeout(() => saveDraft(currentChatId), 200);
+        }
+
+        function saveDraft(chatId) {
+            if(!myId || !chatId) return;
+            const text = (document.getElementById('msg-input')?.value || '').trim();
+            currentDraftText = text;
+            const ref = db.ref(`users/${myId}/drafts/${chatId}`);
+            if(text) ref.set({ text, updatedAt: firebase.database.ServerValue.TIMESTAMP });
+            else ref.remove();
+            if(chatMetaMap[chatId]) {
+                chatMetaMap[chatId].draftText = text || '';
+                upsertChatItem({ id: chatId, ...chatMetaMap[chatId] });
+            }
+        }
+
+        function applyDraftToInput(chatId) {
+            const draft = getDraftForChat(chatId);
+            document.getElementById('msg-input').value = draft;
+            mediaDraftCaption = draft;
+            currentDraftText = draft;
+            updateSendButtonState();
         }
 
         function getChatContainer(chat) {
@@ -2300,7 +2389,7 @@
             el.ontouchstart = (e) => { timer = setTimeout(() => { showChatContext(e.touches[0], c.id); }, 600); }
             el.ontouchend = () => clearTimeout(timer);
             const showUnread = (c.unread || 0) > 0 && !c.muted;
-            el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><i class="fas fa-bell-slash mute-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${c.lastMsg||'...'}</div></div><div class="unread-badge" style="display:${showUnread?'inline-flex':'none'}">${showUnread ? (c.unread||'') : ''}</div>`;
+            el.innerHTML = `<i class="fas fa-thumbtack pin-indicator"></i><i class="fas fa-bell-slash mute-indicator"></i><div class="avatar"></div><div class="chat-info"><div class="chat-name">Loading...</div><div class="last-msg">${buildChatPreviewHtml(c)}</div></div><div class="unread-badge" style="display:${showUnread?'inline-flex':'none'}">${showUnread ? (c.unread||'') : ''}</div>`;
             if(showUnread) el.classList.add('unread-glow');
             container.appendChild(el);
             bindAvatarInspectHandlers(el.querySelector('.avatar'), () => ({
@@ -2314,7 +2403,7 @@
                 av.innerHTML = '<i class="fas fa-bookmark"></i>';
                 av.style.fontSize = '20px';
                 el.querySelector('.chat-name').innerText = langData[currentLang].notes_title;
-                el.querySelector('.last-msg').innerText = c.lastMsg || langData[currentLang].notes_desc;
+                el.querySelector('.last-msg').innerHTML = buildChatPreviewHtml(c.lastMsg ? c : { ...c, lastMsg: langData[currentLang].notes_desc });
                 return;
             }
             db.ref(c.id.startsWith('group_') ? `groups/${c.id}` : `users/${c.id}`).on('value', s => {
@@ -2447,6 +2536,13 @@
         }
 
         function showDeleteChatOptions() {
+            if(isFavoritesChat(selectedIdForMenu)) {
+                document.querySelector('#delete-chat-modal [data-key="delete_me"]').innerText = langData[currentLang].clear_favorites || 'Clear favorites chat';
+                document.querySelector('#delete-chat-modal [data-key="delete_all"]').style.display = 'none';
+            } else {
+                document.querySelector('#delete-chat-modal [data-key="delete_me"]').innerText = langData[currentLang].delete_me;
+                document.querySelector('#delete-chat-modal [data-key="delete_all"]').style.display = 'block';
+            }
             document.getElementById('chat-menu').style.display='none';
             document.getElementById('delete-chat-modal').style.display='flex';
         }
@@ -2454,8 +2550,12 @@
         function deleteChat(everyone) {
             const cid = selectedIdForMenu;
             if(isFavoritesChat(cid)) {
-                showToast(langData[currentLang].favorites_cannot_delete);
+                db.ref(`messages/${getFavoritesMessagePath()}`).remove();
+                db.ref(`users/${myId}/chats/${cid}`).update({ lastMsg: langData[currentLang].notes_desc, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
+                db.ref(`users/${myId}/drafts/${cid}`).remove();
+                showToast(langData[currentLang].clear_favorites || 'Cleared');
                 document.getElementById('delete-chat-modal').style.display='none';
+                if(currentChatId === cid) openChat(cid);
                 return;
             }
             db.ref(`users/${myId}/chats/${cid}`).remove();
@@ -2576,6 +2676,9 @@
             area.innerHTML = '<div id="empty-placeholder" class="empty-chat-placeholder"><div class="ec-icon">🍬</div><div class="ec-title" data-key="new_chat_title">New Chat</div><div class="ec-text" data-key="new_chat_desc">Write something to start history. Be careful with scammers!</div></div>';
             area.appendChild(bubble);
             setLang(currentLang);
+            pendingUnreadInChat = 0;
+            toggleScrollBottomIndicator(false);
+            applyDraftToInput(id);
 
             const isGroup = id.startsWith('group_');
             const isFavorites = isFavoritesChat(id);
@@ -2619,7 +2722,16 @@
                 trackChatListener(typingRef, 'value', t => {
                     const typers = t.val();
                     let activeTypers = [];
-                    if(typers) { Object.keys(typers).forEach(uid => { if(uid !== myId && typers[uid]) activeTypers.push(knownUsers[uid]?.nick || 'Member'); }); }
+                    if(typers) {
+                        Object.keys(typers).forEach(uid => {
+                            if(uid === myId) return;
+                            const raw = typers[uid];
+                            const ts = typeof raw === 'object' ? Number(raw.ts || 0) : Date.now();
+                            const isActive = typeof raw === 'object' ? (Date.now() - ts < 6000) : Boolean(raw);
+                            if(isActive) activeTypers.push(knownUsers[uid]?.nick || 'Member');
+                            else if(typeof raw === 'object') db.ref(`groups/${id}/typing/${uid}`).remove();
+                        });
+                    }
                     if(activeTypers.length > 0) {
                         document.getElementById('room-status').innerText = `${activeTypers[0]} ${langData[currentLang].typing}`;
                         const tAv = document.getElementById('typing-avatar');
@@ -2654,7 +2766,9 @@
                 trackChatListener(userRef, 'value', userHandler);
                 trackChatListener(wallpaperRef, 'value', ws => applyChatWallpaper(ws.val() || ''));
                 trackChatListener(typingRef, 'value', tSnap => {
-                    const isTyping = tSnap.val();
+                    const typingVal = tSnap.val();
+                    const isTyping = typeof typingVal === 'object' ? (Date.now() - Number(typingVal.ts || 0) < 6000) : Boolean(typingVal);
+                    if(typeof typingVal === 'object' && !isTyping) db.ref(`users/${id}/chats/${myId}/typing`).remove();
                     const u = knownUsers[id] || {};
                     if(isTyping) {
                         document.getElementById('room-status').innerText = langData[currentLang].typing;
@@ -2720,6 +2834,11 @@
             activeMessagesCid = cid;
             area.onscroll = () => {
                 if(area.scrollTop < 80) expandMessageWindowUp();
+                const nearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 120;
+                if(nearBottom) {
+                    pendingUnreadInChat = 0;
+                    toggleScrollBottomIndicator(false);
+                }
             };
 
             messagesRef.orderByKey().limitToLast(120).once('value', snap => {
@@ -2751,8 +2870,13 @@
                 visibleMessageEnd = chatMessageBuffer.length;
                 if(wasNearBottom) visibleMessageStart = trimWindowByChars(visibleMessageEnd, MESSAGE_CHAR_WINDOW);
                 rerenderVisibleMessages(wasNearBottom);
+                if(!wasNearBottom && msg.from !== myId) {
+                    pendingUnreadInChat += 1;
+                    toggleScrollBottomIndicator(true);
+                }
                 if(msg.from !== myId && msg.status !== 'read') {
                     db.ref(`messages/${cid}/${s.key}`).update({ status: 'read' });
+                    if(!isGroup) db.ref(`users/${msg.from}/chats/${myId}`).update({ lastStatus: 'read' });
                     if(msg.type === 'call_invite') showLocalNotification(msg.fromNick || 'Incoming call', 'is calling you', id);
                     else if(msg.type === 'text' || msg.type === 'media') showLocalNotification(msg.fromNick || 'New message', decryptMessageText(msg.text || '') || 'Media message', id);
                 }
@@ -2784,12 +2908,13 @@
             if(isFavoritesChat(currentChatId)) return;
             if(!canInteractWithCurrentChat()) return;
             const isGroup = currentChatId.startsWith('group_');
-            if(isGroup) db.ref(`groups/${currentChatId}/typing/${myId}`).set(true);
-            else db.ref(`users/${myId}/chats/${currentChatId}/typing`).set(true);
+            const payload = { active: true, ts: firebase.database.ServerValue.TIMESTAMP };
+            if(isGroup) db.ref(`groups/${currentChatId}/typing/${myId}`).set(payload);
+            else db.ref(`users/${myId}/chats/${currentChatId}/typing`).set(payload);
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
                 if(isGroup) db.ref(`groups/${currentChatId}/typing/${myId}`).remove();
-                else db.ref(`users/${myId}/chats/${currentChatId}/typing`).set(false);
+                else db.ref(`users/${myId}/chats/${currentChatId}/typing`).remove();
             }, 2000);
         }
 
@@ -2797,6 +2922,22 @@
             const msgs = document.querySelectorAll('.msg');
             const ph = document.getElementById('empty-placeholder');
             if(msgs.length === 0) ph.classList.add('active'); else ph.classList.remove('active');
+        }
+
+        function toggleScrollBottomIndicator(show) {
+            const indicator = document.getElementById('scroll-bottom-indicator');
+            const count = document.getElementById('scroll-bottom-count');
+            if(!indicator || !count) return;
+            count.innerText = pendingUnreadInChat > 99 ? '99+' : String(Math.max(0, pendingUnreadInChat));
+            indicator.classList.toggle('active', Boolean(show) && pendingUnreadInChat > 0);
+        }
+
+        function scrollChatToBottom(force = false) {
+            const area = document.getElementById('messages-area');
+            if(!area) return;
+            area.scrollTo({ top: area.scrollHeight, behavior: force ? 'smooth' : 'auto' });
+            pendingUnreadInChat = 0;
+            toggleScrollBottomIndicator(false);
         }
 
         function refreshGroupOnlineStatus() {
@@ -2989,7 +3130,8 @@
             updateSendButtonState();
             if(isFavoritesChat(currentChatId)) return;
             if(currentChatId.startsWith('group_')) db.ref(`groups/${currentChatId}/typing/${myId}`).remove();
-            else db.ref(`users/${myId}/chats/${currentChatId}/typing`).set(false);
+            else db.ref(`users/${myId}/chats/${currentChatId}/typing`).remove();
+            saveDraft(currentChatId);
         }
 
         function sendPayload(data) {
@@ -3010,12 +3152,12 @@
             const msgRef = db.ref(`messages/${cid}`).push(payload);
             const lastTxt = data.type === 'gift' ? '🎁 Gift sent' : (data.type === 'call_log' ? 'Call ended' : data.type === 'media' ? '📎 Media' : data.type === 'voice' ? '🎤 Voice message' : (data.text || 'Message'));
             if(isFavorites) {
-                db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
+                db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0, lastFrom: myId, lastStatus: 'sent' });
             } else if(!isGroup) {
-                db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0 });
+                db.ref(`users/${myId}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread: 0, lastFrom: myId, lastStatus: 'sent' });
                 db.ref(`users/${currentChatId}/chats/${myId}`).once('value', snap => {
                     const unread = (snap.val()?.unread || 0) + 1;
-                    db.ref(`users/${currentChatId}/chats/${myId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread, muted: chatMetaMap[currentChatId]?.archived ? true : (snap.val()?.muted || false) });
+                    db.ref(`users/${currentChatId}/chats/${myId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread, lastFrom: myId, lastStatus: 'sent', muted: chatMetaMap[currentChatId]?.archived ? true : (snap.val()?.muted || false) });
                 });
             } else {
                 db.ref(`groups/${currentChatId}/members`).once('value', snap => {
@@ -3023,7 +3165,7 @@
                     Object.keys(members).forEach(uid => {
                         db.ref(`users/${uid}/chats/${currentChatId}`).once('value', chatSnap => {
                             const unread = uid === myId ? 0 : (chatSnap.val()?.unread || 0) + 1;
-                            db.ref(`users/${uid}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread });
+                            db.ref(`users/${uid}/chats/${currentChatId}`).update({ lastMsg: lastTxt, timestamp: firebase.database.ServerValue.TIMESTAMP, unread, lastFrom: myId, lastStatus: uid === myId ? 'read' : 'sent' });
                         });
                     });
                 });
@@ -3501,6 +3643,31 @@
         }
         function startChatFromPreview() { document.getElementById('user-preview-modal').style.display = 'none'; document.getElementById('search-modal').style.display = 'none'; openChat(previewUserId); }
         function startCallFromPreview() { document.getElementById('user-preview-modal').style.display = 'none'; document.getElementById('search-modal').style.display = 'none'; currentChatId = previewUserId; initCall(); }
+        function startHeaderCall(e) {
+            e?.stopPropagation?.();
+            if(!currentChatId) return;
+            if(currentChatId.startsWith('group_')) {
+                startGroupCall();
+                return;
+            }
+            if(isFavoritesChat(currentChatId)) return;
+            initCall();
+        }
+
+        function startGroupCall() {
+            if(!currentChatId || !currentChatId.startsWith('group_')) return;
+            const roomId = `gcall_${Date.now()}_${myId}`;
+            db.ref(`groupCallRooms/${roomId}`).set({
+                groupId: currentChatId,
+                createdBy: myId,
+                createdAt: firebase.database.ServerValue.TIMESTAMP,
+                status: 'ringing',
+                participants: { [myId]: { role: 'host', joinedAt: Date.now() } },
+                signaling: { transport: 'firebase_rtdb', media: 'sfu_required' }
+            });
+            sendPayload({ type: 'text', text: '📞 Group call started. Join from chat header.' });
+            showToast(currentLang === 'ru' ? 'Групповой звонок запущен (бета)' : 'Group call started (beta)');
+        }
 
         /* CALLS & UTILS */
         function startTimer() {
@@ -3888,6 +4055,12 @@
             if(profile.classList.contains('active') || settings.classList.contains('active')) {
                 switchTab('chats', true); // true = called from back button
             }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if(!myId || !currentChatId) return;
+            if(currentChatId.startsWith('group_')) db.ref(`groups/${currentChatId}/typing/${myId}`).remove();
+            else if(!isFavoritesChat(currentChatId)) db.ref(`users/${myId}/chats/${currentChatId}/typing`).remove();
         });
     </script>
 </body>
