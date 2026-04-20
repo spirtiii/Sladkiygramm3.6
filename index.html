@@ -931,7 +931,7 @@
                 give_gift: "Give a Gift 🎁", give_happiness: "Give sweet happiness", are_you_sure: "Are you sure?", yes_give: "Yes, Give!", cancel: "Cancel",
                 gift_love: "Give sweet love", gift_yes: "Give YES", gift_toy: "Give sweet toy", pinned_msg: "Pinned Message", pinned_msgs_title: "Pinned Messages", delete_msg_title: "Delete Message?", delete_chat_title: "Delete Chat?",
                 online: "online", last_seen: "Last seen", typing: "typing...", just_now: "just now", at: "at", select_members: "Select Members:",
-                peer_muted: "Peer turned off mic", call_ended: "Call ended", duration: "Duration", call_back: "Call Back",
+                peer_muted: "Peer turned off mic", call_ended: "Call ended", missed_call: "Missed call", duration: "Duration", call_back: "Call Back",
                 muted: "Notifications off", unmuted: "Notifications on", mute_chat: "Mute chat", unmute_chat: "Unmute chat",
                 group_name: "Group name", group_desc: "Description", save_done: "Saved", channel_readonly: "Only admins can post in this channel", invite_link: "Invite link",
                 create_channel: "Create channel", day_theme: "Day Theme", night_theme: "Night Theme", join_title: "Join by link", join_btn: "Join",
@@ -966,7 +966,7 @@
                 give_gift: "Подарить Подарок 🎁", give_happiness: "Подарите сладкое счастье", are_you_sure: "Вы уверены?", yes_give: "Да, Подарить!", cancel: "Отмена",
                 gift_love: "Подарить сладкую любовь", gift_yes: "Подарить ДА", gift_toy: "Подарить сладкую игрушку", pinned_msg: "Закрепленное сообщение", pinned_msgs_title: "Закрепленные сообщения", delete_msg_title: "Удалить сообщение?", delete_chat_title: "Удалить чат?",
                 online: "в сети", last_seen: "Был(а)", typing: "печатает...", just_now: "только что", at: "в", select_members: "Выберите участников:",
-                peer_muted: "Собеседник выключил микро", call_ended: "Звонок завершен", duration: "Длительность", call_back: "Перезвонить",
+                peer_muted: "Собеседник выключил микро", call_ended: "Звонок завершен", missed_call: "Пропущенный звонок", duration: "Длительность", call_back: "Перезвонить",
                 muted: "Уведомления выключены", unmuted: "Уведомления включены", mute_chat: "Выключить уведомления", unmute_chat: "Включить уведомления",
                 group_name: "Название", group_desc: "Описание", save_done: "Сохранено", channel_readonly: "В канале писать может только админ", invite_link: "Ссылка-приглашение",
                 create_channel: "Создать канал", day_theme: "Дневная тема", night_theme: "Ночная тема", join_title: "Вступление по ссылке", join_btn: "Присоединиться",
@@ -1000,7 +1000,7 @@
                 give_gift: "Geschenk senden 🎁", give_happiness: "Süße Freude schenken", are_you_sure: "Bist du sicher?", yes_give: "Ja, senden!", cancel: "Abbrechen",
                 gift_love: "Süße Liebe schenken", gift_yes: "JA schenken", gift_toy: "Süßes Spielzeug schenken", pinned_msg: "Angeheftete Nachricht", pinned_msgs_title: "Angeheftete Nachrichten", delete_msg_title: "Nachricht löschen?", delete_chat_title: "Chat löschen?",
                 online: "online", last_seen: "Zuletzt online", typing: "schreibt...", just_now: "gerade eben", at: "um", select_members: "Mitglieder auswählen:",
-                peer_muted: "Gegenüber hat Mikro aus", call_ended: "Anruf beendet", duration: "Dauer", call_back: "Zurückrufen",
+                peer_muted: "Gegenüber hat Mikro aus", call_ended: "Anruf beendet", missed_call: "Verpasster Anruf", duration: "Dauer", call_back: "Zurückrufen",
                 muted: "Benachrichtigungen aus", unmuted: "Benachrichtigungen an", mute_chat: "Stummschalten", unmute_chat: "Stummschaltung aufheben",
                 group_name: "Gruppenname", group_desc: "Beschreibung", save_done: "Gespeichert", channel_readonly: "Nur Admins können im Kanal schreiben", invite_link: "Einladungslink",
                 create_channel: "Kanal erstellen", day_theme: "Tag", night_theme: "Nacht", join_title: "Per Link beitreten", join_btn: "Beitreten",
@@ -1075,6 +1075,7 @@
         let draftSaveTimer = null;
         let pendingUnreadInChat = 0;
         let currentDraftText = '';
+        let groupOnlineStatusToken = 0;
         const WEATHER_CODE_MAP = {
             0: { icon: '☀️', ru: 'Ясно', en: 'Clear' }, 1: { icon: '🌤️', ru: 'Солнечно', en: 'Sunny' }, 2: { icon: '⛅', ru: 'Переменная облачность', en: 'Partly cloudy' }, 3: { icon: '☁️', ru: 'Облачно', en: 'Cloudy' },
             45: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 48: { icon: '🌫️', ru: 'Туман', en: 'Fog' }, 51: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 53: { icon: '🌦️', ru: 'Морось', en: 'Drizzle' }, 55: { icon: '🌧️', ru: 'Сильная морось', en: 'Heavy drizzle' },
@@ -1119,7 +1120,8 @@
             } catch(e) { console.error(e); }
         };
 
-        function setLang(lang) {
+        function setLang(lang, options = {}) {
+            const { rerenderChats = true } = options;
             currentLang = lang;
             localStorage.setItem('sladkiy_lang', lang);
             document.getElementById('btn-en').classList.toggle('selected-border', lang==='en');
@@ -1165,10 +1167,12 @@
             updateArchiveCount();
             initWeather();
             updateThemeControls();
-            Object.values(chatMetaMap).forEach(chat => {
-                if(chat?.id) upsertChatItem({ id: chat.id, ...chat });
-            });
-            if(myId) {
+            if(rerenderChats) {
+                Object.values(chatMetaMap).forEach(chat => {
+                    if(chat?.id) upsertChatItem({ id: chat.id, ...chat });
+                });
+            }
+            if(myId && rerenderChats) {
                 db.ref(`users/${myId}/chats/${FAVORITES_CHAT_ID}`).update({
                     lastMsg: chatMetaMap[FAVORITES_CHAT_ID]?.lastMsg || langData[currentLang].notes_desc
                 });
@@ -1306,6 +1310,7 @@
             loadingOlderMessages = false;
             activeMessagesCid = '';
             currentChatAccess = { blockedByMe: false, blockedMe: false };
+            groupOnlineStatusToken++;
             updateChatAccessUI();
             updateSendButtonState();
             if(resetHistoryState && history.state?.view === 'chat') history.back();
@@ -2680,6 +2685,7 @@
         function openChat(id) {
             cleanupChatListeners();
             history.pushState({view: 'chat'}, '', '');
+            groupOnlineStatusToken++;
 
             currentChatId = id;
             document.getElementById('chat-room').classList.add('active');
@@ -2689,7 +2695,7 @@
             const bubble = document.getElementById('typing-bubble');
             area.innerHTML = '<div id="empty-placeholder" class="empty-chat-placeholder"><div class="ec-icon">🍬</div><div class="ec-title" data-key="new_chat_title">New Chat</div><div class="ec-text" data-key="new_chat_desc">Write something to start history. Be careful with scammers!</div></div>';
             area.appendChild(bubble);
-            setLang(currentLang);
+            setLang(currentLang, { rerenderChats: false });
             pendingUnreadInChat = 0;
             toggleScrollBottomIndicator(false);
             applyDraftToInput(id);
@@ -2778,6 +2784,8 @@
                         if(e.target.classList.contains('fa-arrow-left') || e.target.classList.contains('fa-phone') || e.target.classList.contains('fa-video')) return;
                         openUserPreview(id, u);
                     };
+                    const statusEl = document.getElementById('room-status');
+                    if(statusEl) statusEl.innerText = u.online ? langData[currentLang].online : formatLastSeen(u.lastSeen);
                 };
                 trackChatListener(userRef, 'value', userHandler);
                 trackChatListener(wallpaperRef, 'value', ws => applyChatWallpaper(ws.val() || ''));
@@ -2958,12 +2966,14 @@
 
         function refreshGroupOnlineStatus() {
             if(!currentGroupData?.members) return;
+            const token = ++groupOnlineStatusToken;
             const memberIds = Object.keys(currentGroupData.members);
             Promise.all(memberIds.map(uid => db.ref(`users/${uid}/online`).once('value'))).then(snapshots => {
+                if(token !== groupOnlineStatusToken || currentChatId !== currentGroupData?.id) return;
                 const onlineCount = snapshots.filter(s => s.val()).length;
-                document.getElementById('room-status').innerText = onlineCount
-                    ? `${onlineCount} ${langData[currentLang].members_online}`
-                    : langData[currentLang].only_you_online;
+                document.getElementById('room-status').innerText = onlineCount <= 1
+                    ? langData[currentLang].only_you_online
+                    : `${onlineCount} ${langData[currentLang].members_online}`;
             });
         }
 
@@ -2984,12 +2994,13 @@
                 div.className = 'msg msg-in';
                 div.style.background = 'transparent';
                 div.style.boxShadow = 'none';
+                const isMissed = msg.callKind === 'missed';
                 div.innerHTML = `
                     <div class="msg-call glass-panel" onclick="currentChatId='${msg.from}'; initCall()">
                         <div class="call-icon-box"><i class="fas fa-phone"></i></div>
                         <div class="call-details">
-                            <div class="call-title">${langData[currentLang].call_ended}</div>
-                            <div class="call-duration">${langData[currentLang].duration}: ${msg.text}</div>
+                            <div class="call-title">${isMissed ? (langData[currentLang].missed_call || 'Missed call') : langData[currentLang].call_ended}</div>
+                            <div class="call-duration">${isMissed ? '' : `${langData[currentLang].duration}: ${msg.text}`}</div>
                         </div>
                     </div>`;
                 area.insertBefore(div, document.getElementById('typing-bubble'));
@@ -3716,6 +3727,7 @@
                 return;
             }
             const callId = `call_${Date.now()}_${myId}`;
+            callLogSent = false;
             currentCallSessionId = callId;
             currentCallMeta = { peerId: currentChatId, direction: 'outgoing', minimized: false };
             db.ref(`users/${currentChatId}`).once('value', s => {
@@ -3736,6 +3748,7 @@
 
         function openIncomingCallUI(callId, session) {
             currentChatId = session.caller;
+            callLogSent = false;
             currentCallSessionId = callId;
             currentCallMeta = { peerId: session.caller, direction: 'incoming', minimized: false };
             openCallShell({ peerId: session.caller, peerName: session.callerNick || session.caller, avatar: session.callerAvatar || '', status: 'Incoming call...' });
@@ -3893,6 +3906,9 @@
             if(callActive && !callLogSent && callSeconds > 0) {
                  callLogSent = true;
                  sendPayload({ type: 'call_log', text: duration });
+            } else if(!callActive && !callLogSent && currentCallMeta?.direction === 'outgoing') {
+                callLogSent = true;
+                sendPayload({ type: 'call_log', text: '--', callKind: 'missed' });
             }
             document.getElementById('call-modal').style.display='none';
             document.getElementById('call-mini-banner').classList.remove('active');
