@@ -1488,7 +1488,7 @@
                 try {
                     const { latitude, longitude } = pos.coords;
                     const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`;
-                    const resp = await fetch(url);
+                    const resp = await fetch(url, { cache: 'no-store' });
                     const data = await resp.json();
                     const current = data?.current || {};
                     currentWeatherCode = current.weather_code;
@@ -1496,7 +1496,7 @@
                     updateWeatherCard({ icon: map.icon, temp: Math.round(current.temperature_2m ?? 0), text: currentLang === 'ru' ? map.ru : (currentLang === 'de' ? (map.de || map.en) : map.en) });
                     fetchWeatherDetails(latitude, longitude);
                 } catch(e) { updateWeatherCard(); }
-            }, () => updateWeatherCard());
+            }, () => updateWeatherCard(), { enableHighAccuracy: false, maximumAge: 10 * 60 * 1000, timeout: 12000 });
         }
 
         function getWeatherAnimClass(code) {
@@ -1515,9 +1515,13 @@
         }
 
         async function fetchWeatherDetails(lat, lon) {
+            let timeoutId = null;
             try {
+                const controller = new AbortController();
+                timeoutId = setTimeout(() => controller.abort(), 10000);
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=auto`;
-                const resp = await fetch(url);
+                const resp = await fetch(url, { cache: 'no-store', signal: controller.signal });
+                clearTimeout(timeoutId);
                 const data = await resp.json();
                 const hourlyTimes = data?.hourly?.time || [];
                 const hourlyTemps = data?.hourly?.temperature_2m || [];
@@ -1532,12 +1536,25 @@
                     const txt = currentLang === 'ru' ? wm.ru : (currentLang === 'de' ? (wm.de || wm.en) : wm.en);
                     chips.push(`<div class="hour-chip"><div>${h}:00</div><div class="wx">${wm.icon}</div><div style="font-weight:700">${Math.round(hourlyTemps[i])}°</div><div class="label">${txt}</div></div>`);
                 }
+                if(!chips.length && hourlyTimes.length) {
+                    for(let i=0;i<hourlyTimes.length && chips.length<6;i++) {
+                        const h = new Date(hourlyTimes[i]).getHours().toString().padStart(2,'0');
+                        const wm = WEATHER_CODE_MAP[hourlyCodes[i]] || WEATHER_CODE_MAP[3];
+                        const txt = currentLang === 'ru' ? wm.ru : (currentLang === 'de' ? (wm.de || wm.en) : wm.en);
+                        chips.push(`<div class="hour-chip"><div>${h}:00</div><div class="wx">${wm.icon}</div><div style="font-weight:700">${Math.round(hourlyTemps[i])}°</div><div class="label">${txt}</div></div>`);
+                    }
+                }
                 const tomorrowMax = data?.daily?.temperature_2m_max?.[1];
                 const tomorrowMin = data?.daily?.temperature_2m_min?.[1];
                 document.getElementById('weather-summary').innerText = currentLang==='ru' ? 'Подробный прогноз' : (currentLang==='de' ? 'Detaillierte Vorhersage' : 'Detailed forecast');
-                document.getElementById('weather-tomorrow').innerText = (currentLang==='ru' ? 'Завтра: ' : (currentLang==='de' ? 'Morgen: ' : 'Tomorrow: ')) + `${Math.round(tomorrowMin)}° ... ${Math.round(tomorrowMax)}°`;
+                const tomorrowText = Number.isFinite(tomorrowMin) && Number.isFinite(tomorrowMax)
+                    ? `${Math.round(tomorrowMin)}° ... ${Math.round(tomorrowMax)}°`
+                    : (currentLang==='ru' ? 'нет данных' : (currentLang==='de' ? 'keine Daten' : 'no data'));
+                document.getElementById('weather-tomorrow').innerText = (currentLang==='ru' ? 'Завтра: ' : (currentLang==='de' ? 'Morgen: ' : 'Tomorrow: ')) + tomorrowText;
                 document.getElementById('weather-hourly').innerHTML = chips.join('');
-            } catch(e) {}
+            } catch(e) {
+                if(timeoutId) clearTimeout(timeoutId);
+            }
         }
 
         function setVisualStyle(style) {
@@ -1587,23 +1604,16 @@
             r.readAsDataURL(f);
         }
 
-        function getChatCryptoKey() {
-            return btoa(unescape(encodeURIComponent(`${currentChatId || 'chat'}:${myId || 'u'}`))).slice(0, 24);
-        }
-
         function encryptMessageText(text = '') {
-            if(!text) return text;
-            const key = getChatCryptoKey();
-            let out = '';
-            for(let i = 0; i < text.length; i++) out += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-            return `enc:${btoa(unescape(encodeURIComponent(out)))}`;
+            if(typeof text !== 'string') return '';
+            return text;
         }
 
         function decryptMessageText(text = '') {
             if(typeof text !== 'string' || !text.startsWith('enc:')) return text;
             try {
+                const key = btoa(unescape(encodeURIComponent(`${currentChatId || 'chat'}:${myId || 'u'}`))).slice(0, 24);
                 const raw = decodeURIComponent(escape(atob(text.slice(4))));
-                const key = getChatCryptoKey();
                 let out = '';
                 for(let i = 0; i < raw.length; i++) out += String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length));
                 return out;
@@ -2076,7 +2086,8 @@
             const bubble = document.getElementById('typing-bubble');
             if(!area || !bubble) return;
             const wasNearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 120;
-            const distanceFromBottom = area.scrollHeight - area.scrollTop;
+            const prevTop = area.scrollTop;
+            const prevHeight = area.scrollHeight;
             area.querySelectorAll('.msg').forEach(el => el.remove());
             const isGroup = currentChatId?.startsWith('group_');
             for(let i = visibleMessageStart; i < visibleMessageEnd; i++) {
@@ -2086,7 +2097,7 @@
             }
             checkEmptyChat();
             if(keepBottom && wasNearBottom) area.scrollTop = area.scrollHeight;
-            else area.scrollTop = Math.max(0, area.scrollHeight - distanceFromBottom);
+            else area.scrollTop = Math.max(0, prevTop + (area.scrollHeight - prevHeight));
         }
 
         async function loadOlderMessagesChunk(chunkSize = 80) {
@@ -2960,7 +2971,7 @@
             document.getElementById('empty-placeholder').classList.remove('active');
             const area = document.getElementById('messages-area');
             const existing = document.getElementById(`msg-${key}`);
-            const shouldStickToBottom = shouldScroll || (area.scrollHeight - area.scrollTop - area.clientHeight < 120);
+            const shouldStickToBottom = shouldScroll || (!forceUpdate && (area.scrollHeight - area.scrollTop - area.clientHeight < 120));
             if(existing && !forceUpdate) return;
 
             const div = document.createElement('div');
@@ -3134,6 +3145,7 @@
             document.getElementById('msg-input').value = '';
             mediaDraftCaption = '';
             updateSendButtonState();
+            scrollChatToBottom(false);
             if(isFavoritesChat(currentChatId)) return;
             if(currentChatId.startsWith('group_')) db.ref(`groups/${currentChatId}/typing/${myId}`).remove();
             else db.ref(`users/${myId}/chats/${currentChatId}/typing`).remove();
