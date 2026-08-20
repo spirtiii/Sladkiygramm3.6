@@ -394,6 +394,22 @@
         .style-mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
         .chat-open-anim .msg, .chat-open-anim .chat-item { transition: transform .22s ease, opacity .22s ease; }
 
+
+        /* Smooth interaction refinements */
+        .screen {
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+        .screen.hidden { opacity: 0; transform: scale(0.96); pointer-events: none; }
+        button, .chat-item, .clickable {
+            transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.12s ease;
+        }
+        button:active, .chat-item:active, .clickable:active { transform: scale(0.96); opacity: 0.85; }
+        .modal { transition: opacity 0.25s ease; }
+        .modal-content { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); will-change: transform; }
+        .modal.hidden .modal-content { transform: translateY(20px) scale(0.95); }
     </style>
 </head>
 <body class="theme-space" onclick="hideAllMenus()">
@@ -2086,6 +2102,14 @@
             return Math.max(0, start);
         }
 
+        function appendMessageToDOM(msgContainer, msgEl, beforeNode = null, shouldScroll = false) {
+            const fragment = document.createDocumentFragment();
+            fragment.appendChild(msgEl);
+            if(beforeNode && beforeNode.parentNode === msgContainer) msgContainer.insertBefore(fragment, beforeNode);
+            else msgContainer.appendChild(fragment);
+            if(shouldScroll) msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
         function rerenderVisibleMessages(keepBottom = true) {
             const area = document.getElementById('messages-area');
             const bubble = document.getElementById('typing-bubble');
@@ -2095,11 +2119,13 @@
             const prevHeight = area.scrollHeight;
             area.querySelectorAll('.msg').forEach(el => el.remove());
             const isGroup = currentChatId?.startsWith('group_');
+            const fragment = document.createDocumentFragment();
             for(let i = visibleMessageStart; i < visibleMessageEnd; i++) {
                 const item = chatMessageBuffer[i];
                 if(!item) continue;
-                renderMsg(item.key, item.msg, isGroup, true, false);
+                renderMsg(item.key, item.msg, isGroup, true, false, fragment);
             }
+            if(fragment.childNodes.length) area.insertBefore(fragment, bubble);
             checkEmptyChat();
             if(keepBottom && wasNearBottom) area.scrollTop = area.scrollHeight;
             else area.scrollTop = Math.max(0, prevTop + (area.scrollHeight - prevHeight));
@@ -2176,6 +2202,7 @@
                 if(s.exists() && s.val().loginCode) {
                     correctCode = s.val().loginCode;
                     document.getElementById('login-code-modal').style.display = 'flex';
+                    focusSecurityCodeInput();
                 } else {
                     let newCode = Math.floor(1000 + Math.random() * 9000).toString();
                     db.ref(`users/${myId}`).update({ loginCode: newCode });
@@ -2203,6 +2230,7 @@
                     alert(`Your Code: ${correctCode}`);
                     document.getElementById('recovery-modal').style.display = 'none';
                     document.getElementById('login-code-modal').style.display = 'flex';
+                    focusSecurityCodeInput();
                 } else alert("Wrong user or no chat history.");
             });
         }
@@ -2886,14 +2914,21 @@
                 if(msg?.deletedFor && msg.deletedFor[myId]) return;
                 const existingIdx = chatMessageBuffer.findIndex(m => m.key === s.key);
                 const wasNearBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 120;
+                const prevVisibleStart = visibleMessageStart;
                 if(existingIdx !== -1) {
                     chatMessageBuffer[existingIdx].msg = msg;
+                    rerenderVisibleMessages(wasNearBottom);
                 } else {
                     chatMessageBuffer.push({ key: s.key, msg });
+                    visibleMessageEnd = chatMessageBuffer.length;
+                    if(wasNearBottom) visibleMessageStart = trimWindowByChars(visibleMessageEnd, MESSAGE_CHAR_WINDOW);
+                    if(wasNearBottom && visibleMessageStart !== prevVisibleStart) {
+                        rerenderVisibleMessages(true);
+                    } else {
+                        renderMsg(s.key, msg, isGroup, false, wasNearBottom);
+                        checkEmptyChat();
+                    }
                 }
-                visibleMessageEnd = chatMessageBuffer.length;
-                if(wasNearBottom) visibleMessageStart = trimWindowByChars(visibleMessageEnd, MESSAGE_CHAR_WINDOW);
-                rerenderVisibleMessages(wasNearBottom);
                 if(!wasNearBottom && msg.from !== myId) {
                     pendingUnreadInChat += 1;
                     toggleScrollBottomIndicator(true);
@@ -2977,7 +3012,7 @@
             });
         }
 
-        function renderMsg(key, msg, isGroup, forceUpdate=false, shouldScroll=false) {
+        function renderMsg(key, msg, isGroup, forceUpdate=false, shouldScroll=false, renderTarget=null) {
             document.getElementById('empty-placeholder').classList.remove('active');
             const area = document.getElementById('messages-area');
             const existing = document.getElementById(`msg-${key}`);
@@ -3003,8 +3038,8 @@
                             <div class="call-duration">${isMissed ? '' : `${langData[currentLang].duration}: ${msg.text}`}</div>
                         </div>
                     </div>`;
-                area.insertBefore(div, document.getElementById('typing-bubble'));
-                if(shouldStickToBottom) area.scrollTop = area.scrollHeight;
+                if(renderTarget) renderTarget.appendChild(div);
+                else appendMessageToDOM(area, div, document.getElementById('typing-bubble'), shouldStickToBottom);
                 return;
             }
 
@@ -3069,8 +3104,8 @@
             div.innerHTML = `${content}${reactionHtml}<div class="msg-meta-row">${authorMeta}<span class="msg-time">${dateStr} ${timeStr} <i class="fas fa-thumbtack msg-pin-icon ${pinClass}"></i> ${checkHtml}</span></div>`;
             const bubble = document.getElementById('typing-bubble');
             if(forceUpdate && existing) area.replaceChild(div, existing);
-            else area.insertBefore(div, bubble);
-            if(shouldStickToBottom) area.scrollTop = area.scrollHeight;
+            else if(renderTarget) renderTarget.appendChild(div);
+            else appendMessageToDOM(area, div, bubble, shouldStickToBottom);
         }
 
         function bindMessageHoldMenu(div, key, msg) {
@@ -4051,6 +4086,42 @@
         }
         function openLegalModal() { document.getElementById('legal-modal').style.display = 'flex'; }
 
+
+
+        function focusSecurityCodeInput() {
+            const firstInput = document.querySelector('.code-input-container input');
+            if(firstInput) setTimeout(() => firstInput.focus(), 50);
+        }
+
+        function bindSecurityCodeInputs() {
+            document.querySelectorAll('.code-input-container input').forEach((input, index, inputs) => {
+                input.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 1);
+                    if(e.target.value.length === 1 && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if(e.key === 'Backspace' && !e.target.value && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+
+                input.addEventListener('paste', (e) => {
+                    const code = (e.clipboardData || window.clipboardData)?.getData('text')?.replace(/\D/g, '').slice(0, inputs.length);
+                    if(!code) return;
+                    e.preventDefault();
+                    code.split('').forEach((digit, digitIndex) => {
+                        if(inputs[digitIndex]) inputs[digitIndex].value = digit;
+                    });
+                    const nextInput = inputs[Math.min(code.length, inputs.length - 1)];
+                    nextInput?.focus();
+                });
+            });
+        }
+
+        bindSecurityCodeInputs();
 
         (function setupChatEdgeSwipeBack(){
             const chatRoom = document.getElementById('chat-room');
